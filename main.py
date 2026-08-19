@@ -59,7 +59,7 @@ class Tiro(pygame.sprite.Sprite):
         if gravidade_tiro_ativa:
             self.vel_y += self.gravidade
         
-        if not pygame.Rect(0, 0, 800, 600).contains(self.rect):
+        if not pygame.Rect(0, 0, 900, 600).contains(self.rect):
             self.kill()
 
 class Inimigo(pygame.sprite.Sprite):
@@ -68,8 +68,12 @@ class Inimigo(pygame.sprite.Sprite):
         self.tipo = tipo
 
         self.vem_direcao = None
+        self.largura = 30
+        self.altura = 30
 
         if self.tipo == "boss":
+            self.largura = 100
+            self.altura = 100
             self.image = pygame.Surface((100, 100))
             self.image.fill((255, 0, 0)) # Boss é vermelho
             self.velocidade = 1
@@ -103,10 +107,14 @@ class Inimigo(pygame.sprite.Sprite):
             else:
                 self.rect.x -= self.velocidade 
             
-        if self.tipo != "boss" and random.random() < 0.005: 
-            self.image = pygame.transform.scale(self.image, (60, 60))
+        if self.tipo != "boss" and random.random() < 0.005 and self.largura < 180: 
+            self.largura += 30
+            self.altura += 30
+            self.image = pygame.transform.scale(self.image, (self.largura, self.altura))
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
-            self.vida += 2
+            self.vida += 5
+            nova_velocidade = 60 / self.largura
+            self.velocidade = max(1.0, nova_velocidade)
 
 class Jogador(pygame.sprite.Sprite):
     def __init__(self, posicao_x, posicao_y):
