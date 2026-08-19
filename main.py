@@ -29,6 +29,7 @@ cano_surf.fill(VERDE)
 lista_tiros = []
 
 rodando = True
+gravidade_tiro_ativa = False
 
 vida_jogador = 100
 
@@ -55,7 +56,8 @@ class Tiro(pygame.sprite.Sprite):
         self.rect.x += self.vel_x
         self.rect.y += self.vel_y
 
-        self.vel_y += self.gravidade
+        if gravidade_tiro_ativa:
+            self.vel_y += self.gravidade
         
         if not pygame.Rect(0, 0, 800, 600).contains(self.rect):
             self.kill()
@@ -75,7 +77,7 @@ class Inimigo(pygame.sprite.Sprite):
         else:
             self.image = pygame.Surface((30, 30))
             self.image.fill((0, 255, 0))
-            self.velocidade = random.randint(2, 4)
+            self.velocidade = random.randint(1, 2)
             self.vida = 10
             
         self.rect = self.image.get_rect()
@@ -89,7 +91,7 @@ class Inimigo(pygame.sprite.Sprite):
                 self.vem_direcao = "ESQUERDA"
             else:
                 self.vem_direcao = "DIREITA"
-            self.rect.y = 570
+            self.rect.y = 570 - 30
 
     def update(self):
         # Movimentação
@@ -103,12 +105,21 @@ class Inimigo(pygame.sprite.Sprite):
             
         if self.tipo != "boss" and random.random() < 0.005: 
             self.image = pygame.transform.scale(self.image, (60, 60))
-            self.rect = self.image.get_rect(center=self.rect.center)
+            self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
             self.vida += 2
-            print("O quadrado ficou instável!")
+
+class Jogador(pygame.sprite.Sprite):
+    def __init__(self, posicao_x, posicao_y):
+        super().__init__()
+        self.image = pygame.Surface((50, 50)) 
+        self.image.fill((0, 0, 255)) # Azul
+        self.rect = self.image.get_rect(center=(posicao_x, posicao_y))
+        self.vida = 100
 
 grupo_tiros = pygame.sprite.Group()
 grupo_inimigos = pygame.sprite.Group()
+jogador = Jogador(int(LARGURA / 2), 550.0)
+grupo_jogador = pygame.sprite.GroupSingle(jogador)
 
 while rodando:
     # 1. Tratamento de Eventos
@@ -125,12 +136,19 @@ while rodando:
 
     teclas = pygame.key.get_pressed()
     if teclas[pygame.K_LEFT]:
-        if angulo < 142:
-            angulo += 2
+        if gravidade_tiro_ativa:
+            if angulo < 142:
+                angulo += 2
+        else:
+            if angulo < 179:
+                angulo += 2
     if teclas[pygame.K_RIGHT]:
-        if angulo > 38:
-            angulo -= 2
-
+        if gravidade_tiro_ativa:
+            if angulo > 38:
+                angulo -= 2
+        else:
+            if angulo > 1:
+                angulo -= 2
     print(angulo)
 
     cano_rotacionado = pygame.transform.rotate(cano_surf, angulo - 90)
@@ -141,10 +159,9 @@ while rodando:
 
     TELA.fill(PRETO)
 
-    # Desenha o chão
     pygame.draw.rect(TELA, BRANCO, (0, 570, LARGURA, 30))
 
-    pygame.draw.circle(TELA, VERDE, (int(canhao_x), int(canhao_y)), 20)
+    grupo_jogador.draw(TELA)
 
     TELA.blit(cano_rotacionado, cano_rect)
 
@@ -157,6 +174,15 @@ while rodando:
 
     grupo_inimigos.update()
     grupo_inimigos.draw(TELA)
+
+    colisoes_tiro_inimigo = pygame.sprite.groupcollide(grupo_tiros, grupo_inimigos, True, False)
+
+    for tiro, lista_inimigos_atingidos in colisoes_tiro_inimigo.items():
+        for inimigo in lista_inimigos_atingidos:
+            inimigo.vida -= tiro.dano
+
+            if inimigo.vida <= 0:
+                inimigo.kill()
 
     pygame.display.flip()
     relogio.tick(60)
