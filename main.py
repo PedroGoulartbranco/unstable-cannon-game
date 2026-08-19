@@ -20,6 +20,9 @@ relogio = pygame.time.Clock()
 canhao_x, canhao_y = int(LARGURA / 2), 550.0
 angulo = 90  
 
+velocidade_tiro = 12
+gravidade_tiro = 0.4
+
 largura_cano, altura_cano = 10, 40
 cano_surf = pygame.Surface((largura_cano, altura_cano), pygame.SRCALPHA)
 cano_surf.fill(VERDE)
@@ -27,55 +30,69 @@ cano_surf.fill(VERDE)
 lista_tiros = []
 
 rodando = True
-while rodando:
-  # 1. Tratamento de Eventos
-  for evento in pygame.event.get():
-    if evento.type == pygame.QUIT:
-      pygame.quit()
-      sys.exit()
-    if evento.type == pygame.KEYDOWN:
-      if evento.key == pygame.K_SPACE:
+
+class Tiro(pygame.sprite.Sprite):
+    def __init__(self, x, y, angulo, velocidade, gravidade):
+        super().__init__()
+
+        self.image = pygame.Surface((10, 10))
+        self.image.fill("#32df0f")
+        self.rect = self.image.get_rect(center=(x, y))
+
         angulo_radiano = math.radians(angulo)
+        
+        self.vel_x = math.cos(angulo_radiano) * velocidade
+        self.vel_y = -math.sin(angulo_radiano) * velocidade
 
-        velocidade_tiro = 15
+        self.gravidade = gravidade
+        
+    def update(self):
+        self.rect.x += self.vel_x
+        self.rect.y += self.vel_y
 
-        vel_x = velocidade_tiro * math.cos(angulo_radiano)
-        vel_y = -velocidade_tiro * math.sin(angulo_radiano)
+        self.vel_y += self.gravidade
+        
+        if not pygame.Rect(0, 0, 800, 600).contains(self.rect):
+            self.kill()
 
-        ponta_cano_x = canhao_x + largura_cano * math.cos(angulo_radiano)
-        ponta_cano_y = canhao_y - altura_cano * math.sin(angulo_radiano)
+grupo_tiros = pygame.sprite.Group()
 
-        # 3. Cria o tiro na ponta do cano em vez de na base (canhao_x, canhao_y)
-        lista_tiros.append([ponta_cano_x, ponta_cano_y, vel_x, vel_y])
+while rodando:
+    # 1. Tratamento de Eventos
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        if evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_SPACE:
+                angulo_radiano = math.radians(angulo)
 
-  teclas = pygame.key.get_pressed()
-  if teclas[pygame.K_LEFT]:
-    angulo += 2
-  if teclas[pygame.K_RIGHT]:
-    angulo -= 2
+                novo_tiro = Tiro(canhao_x, canhao_y, angulo, velocidade_tiro, gravidade_tiro)
+                grupo_tiros.add(novo_tiro)
 
-  cano_rotacionado = pygame.transform.rotate(cano_surf, angulo - 90)
+    teclas = pygame.key.get_pressed()
+    if teclas[pygame.K_LEFT]:
+        angulo += 2
+    if teclas[pygame.K_RIGHT]:
+        angulo -= 2
 
-  cano_rect = cano_rotacionado.get_rect()
+    cano_rotacionado = pygame.transform.rotate(cano_surf, angulo - 90)
 
-  cano_rect.midbottom = (canhao_x, canhao_y)
+    cano_rect = cano_rotacionado.get_rect()
 
-  TELA.fill(PRETO)
+    cano_rect.midbottom = (canhao_x, canhao_y)
 
-  # Desenha o chão
-  pygame.draw.rect(TELA, BRANCO, (0, 570, LARGURA, 30))
+    TELA.fill(PRETO)
 
-  pygame.draw.circle(TELA, VERDE, (int(canhao_x), int(canhao_y)), 20)
+    # Desenha o chão
+    pygame.draw.rect(TELA, BRANCO, (0, 570, LARGURA, 30))
 
-  TELA.blit(cano_rotacionado, cano_rect)
+    pygame.draw.circle(TELA, VERDE, (int(canhao_x), int(canhao_y)), 20)
 
-  for tiro in lista_tiros:
-    tiro[0] += tiro[2]  # x += vel_x
-    tiro[1] += tiro[3]  # y += vel_y
+    TELA.blit(cano_rotacionado, cano_rect)
 
-    tiro[3] += 0.4  
+    grupo_tiros.update()
+    grupo_tiros.draw(TELA)
 
-    pygame.draw.circle(TELA, BRANCO, (int(tiro[0]), int(tiro[1])), 4)
-
-  pygame.display.flip()
-  relogio.tick(60)
+    pygame.display.flip()
+    relogio.tick(60)
