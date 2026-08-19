@@ -60,7 +60,7 @@ class Tiro(pygame.sprite.Sprite):
         if gravidade_tiro_ativa:
             self.vel_y += self.gravidade
         
-        if not pygame.Rect(0, 0, 900, 600).contains(self.rect):
+        if self.rect.right < 0 or self.rect.left > LARGURA or self.rect.bottom < 0 or self.rect.top > 600:
             self.kill()
 
 class Inimigo(pygame.sprite.Sprite):
