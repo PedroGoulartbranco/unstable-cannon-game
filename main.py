@@ -71,6 +71,8 @@ class Inimigo(pygame.sprite.Sprite):
         self.largura = 30
         self.altura = 30
 
+        self.dano = 5
+
         if self.tipo == "boss":
             self.largura = 100
             self.altura = 100
@@ -98,7 +100,6 @@ class Inimigo(pygame.sprite.Sprite):
             self.rect.y = ALTURA_CHAO - 30
 
     def update(self):
-        # Movimentação
         if self.tipo == "boss":
             self.rect.y += self.velocidade
         else:
@@ -113,6 +114,7 @@ class Inimigo(pygame.sprite.Sprite):
             self.image = pygame.transform.scale(self.image, (self.largura, self.altura))
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
             self.vida += 5
+            self.dano += 5
             nova_velocidade = 60 / self.largura
             self.velocidade = max(1.0, nova_velocidade)
             self.mudar_cor()
@@ -220,6 +222,7 @@ while rodando:
     grupo_inimigos.draw(TELA)
 
     colisoes_tiro_inimigo = pygame.sprite.groupcollide(grupo_tiros, grupo_inimigos, True, False)
+    colisoes_inimigo_jogador = pygame.sprite.groupcollide(grupo_jogador, grupo_inimigos, False, False)
 
     for tiro, lista_inimigos_atingidos in colisoes_tiro_inimigo.items():
         for inimigo in lista_inimigos_atingidos:
@@ -227,6 +230,10 @@ while rodando:
 
             if inimigo.vida <= 0:
                 inimigo.kill()
+    for jogador, lista_inimigos_atancando in colisoes_inimigo_jogador.items():
+        for inimigo in lista_inimigos_atancando:
+            jogador.vida -= inimigo.dano
+            inimigo.kill()
 
     pygame.display.flip()
     relogio.tick(60)
