@@ -17,15 +17,14 @@ VERDE = "#806e58"
 # Relógio para controlar o FPS
 relogio = pygame.time.Clock()
 
-canhao_x, canhao_y = int(LARGURA / 2), 550.0
 angulo = 90  
 
 velocidade_tiro = 12
 gravidade_tiro = 0.4
 
 largura_cano, altura_cano = 10, 55
-cano_surf = pygame.Surface((largura_cano, altura_cano), pygame.SRCALPHA)
-cano_surf.fill(VERDE)
+cano_surf = pygame.Surface((largura_cano, altura_cano * 2), pygame.SRCALPHA)
+pygame.draw.rect(cano_surf, VERDE, (0, 0, largura_cano, altura_cano))
 
 lista_tiros = []
 
@@ -121,15 +120,23 @@ class Inimigo(pygame.sprite.Sprite):
 class Jogador(pygame.sprite.Sprite):
     def __init__(self, posicao_x, posicao_y):
         super().__init__()
-        self.image = pygame.Surface((50, 50)) 
-        self.image.fill((0, 0, 255)) # Azul
-        self.rect = self.image.get_rect(midbottom=(posicao_x, posicao_y))
+        self.image = pygame.Surface((60, 60), pygame.SRCALPHA) 
+        
+        pygame.draw.circle(self.image, "#806e58", (30, 30), 30) 
+        
+        self.rect = self.image.get_rect()
+        
+        self.rect.centerx = posicao_x
+        self.rect.centery = posicao_y
         self.vida = 100
 
 grupo_tiros = pygame.sprite.Group()
 grupo_inimigos = pygame.sprite.Group()
 jogador = Jogador(int(LARGURA / 2), ALTURA_CHAO)
 grupo_jogador = pygame.sprite.GroupSingle(jogador)
+
+canhao_x = jogador.rect.centerx
+canhao_y = jogador.rect.centery
 
 while rodando:
     # 1. Tratamento de Eventos
@@ -154,24 +161,26 @@ while rodando:
                 angulo += 2
     if teclas[pygame.K_RIGHT]:
         if gravidade_tiro_ativa:
-            # if angulo > 38:
+            if angulo > 180:
                 angulo -= 2
         else:
-            # if angulo > 1:
+            if angulo > 0:
                 angulo -= 2
     print(angulo)
 
-    canhao_y = jogador.rect.top 
+    canhao_x = jogador.rect.centerx
+    canhao_y = jogador.rect.centery 
     cano_rotacionado = pygame.transform.rotate(cano_surf, angulo - 90)
     cano_rect = cano_rotacionado.get_rect()
-    cano_rect.midbottom = (canhao_x, canhao_y)
+    
+    # O ponto de rotação/fixação do cano fica bem no centro do círculo
+    cano_rect.center = (canhao_x, canhao_y)
 
     TELA.fill(PRETO)
 
     pygame.draw.rect(TELA, BRANCO, (0, ALTURA_CHAO, LARGURA, ALTURA - ALTURA_CHAO))
 
     grupo_jogador.draw(TELA)
-    pygame.draw.circle(TELA, VERDE, (canhao_x, canhao_y), 20)
     
     TELA.blit(cano_rotacionado, cano_rect)
 
