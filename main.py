@@ -35,9 +35,9 @@ gravidade_tiro_ativa = False
 
 vida_jogador = 100
 
-numero_horda = 1
+numero_horda = 4
 inimigos_derrotados_na_horda = 0
-inimigos_proxima_horda = 10
+inimigos_proxima_horda = 5
 intervalo_spawn = 2000
 ultimo_spawn = 0
 horda_ativa = True
@@ -220,14 +220,14 @@ while rodando:
     if inimigos_derrotados_na_horda >= inimigos_proxima_horda:
         numero_horda += 1
         inimigos_derrotados_na_horda = 0
-        inimigos_derrotados_na_horda = 0
 
         inimigos_proxima_horda = int(inimigos_proxima_horda * 1.4) 
 
         intervalo_spawn = max(400, int(intervalo_spawn * 0.9))
 
-        if numero_horda % 5:
-            limite_inimigo_tela = random.randint(11, 17)
+        if numero_horda % 5 == 0:
+            limite_inimigo_tela = random.randint(11, 15)
+            intervalo_spawn = random.randint(200, 300)
         else:
             limite_inimigo_tela = 10
 
