@@ -72,9 +72,13 @@ while rodando:
 
     teclas = pygame.key.get_pressed()
     if teclas[pygame.K_LEFT]:
-        angulo += 2
+        if angulo < 142:
+            angulo += 2
     if teclas[pygame.K_RIGHT]:
-        angulo -= 2
+        if angulo > 38:
+            angulo -= 2
+
+    print(angulo)
 
     cano_rotacionado = pygame.transform.rotate(cano_surf, angulo - 90)
 
