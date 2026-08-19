@@ -14,6 +14,8 @@ PRETO = (20, 20, 20)
 BRANCO = (255, 255, 255)
 VERDE = "#806e58"
 
+fonte_vida = pygame.font.SysFont(None, 20)
+
 # Relógio para controlar o FPS
 relogio = pygame.time.Clock()
 
@@ -138,8 +140,35 @@ grupo_jogador = pygame.sprite.GroupSingle(jogador)
 canhao_x = jogador.rect.centerx
 canhao_y = jogador.rect.centery - 10
 
+def mostrar_barra_vida_jogador(tela, fonte, vida_total, vida_atual):
+    largura_tela = tela.get_width()
+    fator_escala = largura_tela / 960
+
+    largura_total_barra = int(500 * fator_escala)
+    altura_barra = int(25 * fator_escala) 
+    
+    pos_x = (largura_tela // 2) - (largura_total_barra // 2)
+    pos_y = int(20 * fator_escala)  
+
+    vida_segura = max(0, min(vida_atual, vida_total))
+    largura_atual_barra = int((vida_segura / vida_total) * largura_total_barra)
+
+    rect_barra_fundo = pygame.Rect(pos_x, pos_y, largura_total_barra, altura_barra)
+    rect_barra_frente = pygame.Rect(pos_x, pos_y, largura_atual_barra, altura_barra)
+
+    pygame.draw.rect(tela, (60, 60, 60), rect_barra_fundo)   
+    pygame.draw.rect(tela, (50, 200, 50), rect_barra_frente) 
+    pygame.draw.rect(tela, (255, 255, 255), rect_barra_fundo, int(2 * fator_escala))
+
+    texto_vida = f"{int(vida_segura)} / {int(vida_total)}"
+    
+    surf_texto = fonte.render(texto_vida, True, (255, 255, 255))
+    
+    rect_texto = surf_texto.get_rect(center=rect_barra_fundo.center)
+    
+    tela.blit(surf_texto, rect_texto)
+
 while rodando:
-    # 1. Tratamento de Eventos
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             pygame.quit()
@@ -147,8 +176,10 @@ while rodando:
         if evento.type == pygame.KEYDOWN:
             if evento.key == pygame.K_SPACE:
                 angulo_radiano = math.radians(angulo)
-
-                novo_tiro = Tiro(canhao_x, canhao_y, angulo, velocidade_tiro, gravidade_tiro)
+                
+                ponta_x = canhao_x + altura_cano * math.cos(angulo_radiano)
+                ponta_y = canhao_y - altura_cano * math.sin(angulo_radiano)
+                novo_tiro = Tiro(ponta_x, ponta_y, angulo, velocidade_tiro, gravidade_tiro)
                 grupo_tiros.add(novo_tiro)
 
     teclas = pygame.key.get_pressed()
@@ -165,12 +196,12 @@ while rodando:
     cano_rotacionado = pygame.transform.rotate(cano_surf, angulo - 90)
     cano_rect = cano_rotacionado.get_rect()
     
-    # O ponto de rotação/fixação do cano fica bem no centro do círculo
     cano_rect.center = (canhao_x, canhao_y)
 
     TELA.fill(PRETO)
 
     pygame.draw.rect(TELA, BRANCO, (0, ALTURA_CHAO, LARGURA, ALTURA - ALTURA_CHAO))
+    mostrar_barra_vida_jogador(TELA, fonte_vida, vida_jogador, jogador.vida)
 
     grupo_jogador.draw(TELA)
     
