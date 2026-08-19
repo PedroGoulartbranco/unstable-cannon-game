@@ -2,6 +2,7 @@ import sys
 import pygame
 import math
 import random
+from config import *
 
 pygame.init()
 
@@ -115,6 +116,9 @@ class Inimigo(pygame.sprite.Sprite):
             self.vida += 5
             nova_velocidade = 60 / self.largura
             self.velocidade = max(1.0, nova_velocidade)
+            self.mudar_cor()
+    def mudar_cor(self):
+        self.image.fill(dicionario_cor_inimigos[self.largura])
 
 class Jogador(pygame.sprite.Sprite):
     def __init__(self, posicao_x, posicao_y):
