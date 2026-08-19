@@ -136,7 +136,7 @@ jogador = Jogador(int(LARGURA / 2), ALTURA_CHAO)
 grupo_jogador = pygame.sprite.GroupSingle(jogador)
 
 canhao_x = jogador.rect.centerx
-canhao_y = jogador.rect.centery
+canhao_y = jogador.rect.centery - 10
 
 while rodando:
     # 1. Tratamento de Eventos
@@ -153,23 +153,15 @@ while rodando:
 
     teclas = pygame.key.get_pressed()
     if teclas[pygame.K_LEFT]:
-        if gravidade_tiro_ativa:
-            if angulo < 142:
-                angulo += 2
-        else:
-            if angulo < 179:
+            if angulo < 180:
                 angulo += 2
     if teclas[pygame.K_RIGHT]:
-        if gravidade_tiro_ativa:
-            if angulo > 180:
-                angulo -= 2
-        else:
-            if angulo > 0:
+        if angulo > 0:
                 angulo -= 2
     print(angulo)
 
     canhao_x = jogador.rect.centerx
-    canhao_y = jogador.rect.centery 
+    canhao_y = jogador.rect.centery - 5
     cano_rotacionado = pygame.transform.rotate(cano_surf, angulo - 90)
     cano_rect = cano_rotacionado.get_rect()
     
