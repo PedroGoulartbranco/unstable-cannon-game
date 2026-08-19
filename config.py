@@ -6,3 +6,5 @@ dicionario_cor_inimigos = {
     150: "#e76610",
     180: "#ee3333",
 }
+
+ALTURA_CHAO = 530

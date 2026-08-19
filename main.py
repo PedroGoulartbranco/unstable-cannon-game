@@ -12,7 +12,7 @@ pygame.display.set_caption("Canhão vs Alvo - Teste de Trigonometria")
 
 PRETO = (20, 20, 20)
 BRANCO = (255, 255, 255)
-VERDE = (50, 200, 100)
+VERDE = "#806e58"
 
 # Relógio para controlar o FPS
 relogio = pygame.time.Clock()
@@ -23,7 +23,7 @@ angulo = 90
 velocidade_tiro = 12
 gravidade_tiro = 0.4
 
-largura_cano, altura_cano = 10, 40
+largura_cano, altura_cano = 10, 55
 cano_surf = pygame.Surface((largura_cano, altura_cano), pygame.SRCALPHA)
 cano_surf.fill(VERDE)
 
@@ -33,8 +33,6 @@ rodando = True
 gravidade_tiro_ativa = False
 
 vida_jogador = 100
-
-y_chao = 570
 
 class Tiro(pygame.sprite.Sprite):
     def __init__(self, x, y, angulo, velocidade, gravidade):
@@ -51,7 +49,7 @@ class Tiro(pygame.sprite.Sprite):
 
         self.gravidade = gravidade
 
-        self.dano = 15
+        self.dano = 10
         
     def update(self):
         self.rect.x += self.vel_x
@@ -96,7 +94,7 @@ class Inimigo(pygame.sprite.Sprite):
                 self.vem_direcao = "ESQUERDA"
             else:
                 self.vem_direcao = "DIREITA"
-            self.rect.y = 570 - 30
+            self.rect.y = ALTURA_CHAO - 30
 
     def update(self):
         # Movimentação
@@ -125,12 +123,12 @@ class Jogador(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.Surface((50, 50)) 
         self.image.fill((0, 0, 255)) # Azul
-        self.rect = self.image.get_rect(center=(posicao_x, posicao_y))
+        self.rect = self.image.get_rect(midbottom=(posicao_x, posicao_y))
         self.vida = 100
 
 grupo_tiros = pygame.sprite.Group()
 grupo_inimigos = pygame.sprite.Group()
-jogador = Jogador(int(LARGURA / 2), 550.0)
+jogador = Jogador(int(LARGURA / 2), ALTURA_CHAO)
 grupo_jogador = pygame.sprite.GroupSingle(jogador)
 
 while rodando:
@@ -156,24 +154,26 @@ while rodando:
                 angulo += 2
     if teclas[pygame.K_RIGHT]:
         if gravidade_tiro_ativa:
-            if angulo > 38:
+            # if angulo > 38:
                 angulo -= 2
         else:
-            if angulo > 1:
+            # if angulo > 1:
                 angulo -= 2
     print(angulo)
 
+    canhao_y = jogador.rect.top 
     cano_rotacionado = pygame.transform.rotate(cano_surf, angulo - 90)
-
     cano_rect = cano_rotacionado.get_rect()
-
     cano_rect.midbottom = (canhao_x, canhao_y)
 
     TELA.fill(PRETO)
 
-    pygame.draw.rect(TELA, BRANCO, (0, 570, LARGURA, 30))
+    pygame.draw.rect(TELA, BRANCO, (0, ALTURA_CHAO, LARGURA, ALTURA - ALTURA_CHAO))
 
     grupo_jogador.draw(TELA)
+    pygame.draw.circle(TELA, VERDE, (canhao_x, canhao_y), 20)
+    
+    TELA.blit(cano_rotacionado, cano_rect)
 
     TELA.blit(cano_rotacionado, cano_rect)
 
