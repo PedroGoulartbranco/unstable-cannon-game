@@ -8,14 +8,14 @@ pygame.init()
 
 LARGURA, ALTURA = 900, 600
 TELA = pygame.display.set_mode((LARGURA, ALTURA))
-pygame.display.set_caption("Canhão vs Alvo - Teste de Trigonometria")
+pygame.display.set_caption("Canhão")
 
 PRETO = (20, 20, 20)
 BRANCO = (255, 255, 255)
 VERDE = "#806e58"
 
-fonte_vida = pygame.font.SysFont(None, 20)
-
+fonte = pygame.font.SysFont(None, 20)
+fonte_horda = pygame.font.SysFont(None, 30)
 # Relógio para controlar o FPS
 relogio = pygame.time.Clock()
 
@@ -34,6 +34,15 @@ rodando = True
 gravidade_tiro_ativa = False
 
 vida_jogador = 100
+
+numero_horda = 1
+inimigos_derrotados_na_horda = 0
+inimigos_proxima_horda = 10
+intervalo_spawn = 2000
+ultimo_spawn = 0
+horda_ativa = True
+limite_inimigo_tela = 10
+
 
 class Tiro(pygame.sprite.Sprite):
     def __init__(self, x, y, angulo, velocidade, gravidade):
@@ -170,6 +179,22 @@ def mostrar_barra_vida_jogador(tela, fonte, vida_total, vida_atual):
     
     tela.blit(surf_texto, rect_texto)
 
+def mostrar_horda(tela, fonte, numero_horda):
+    largura_tela = tela.get_width()
+    fator_escala = largura_tela / 960
+
+
+    texto_horda = f"HORDA: {numero_horda}"
+    
+    surf_texto = fonte.render(texto_horda, True, (255, 255, 255))
+    
+    rect_texto = surf_texto.get_rect()
+   
+    rect_texto.right = largura_tela - int(30 * fator_escala)
+    rect_texto.top = int(20 * fator_escala)
+    
+    tela.blit(surf_texto, rect_texto)
+
 while rodando:
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
@@ -183,6 +208,28 @@ while rodando:
                 ponta_y = canhao_y - altura_cano * math.sin(angulo_radiano)
                 novo_tiro = Tiro(ponta_x, ponta_y, angulo, velocidade_tiro, gravidade_tiro)
                 grupo_tiros.add(novo_tiro)
+
+    tempo_atual = pygame.time.get_ticks()
+
+    if horda_ativa and len(grupo_inimigos) < limite_inimigo_tela: 
+        if tempo_atual - ultimo_spawn > intervalo_spawn:
+            novo_inimigo = Inimigo(tipo="normal") 
+            grupo_inimigos.add(novo_inimigo)
+            ultimo_spawn = tempo_atual
+
+    if inimigos_derrotados_na_horda >= inimigos_proxima_horda:
+        numero_horda += 1
+        inimigos_derrotados_na_horda = 0
+        inimigos_derrotados_na_horda = 0
+
+        inimigos_proxima_horda = int(inimigos_proxima_horda * 1.4) 
+
+        intervalo_spawn = max(400, int(intervalo_spawn * 0.9))
+
+        if numero_horda % 5:
+            limite_inimigo_tela = random.randint(11, 17)
+        else:
+            limite_inimigo_tela = 10
 
     teclas = pygame.key.get_pressed()
     if teclas[pygame.K_LEFT]:
@@ -203,7 +250,8 @@ while rodando:
     TELA.fill(PRETO)
 
     pygame.draw.rect(TELA, BRANCO, (0, ALTURA_CHAO, LARGURA, ALTURA - ALTURA_CHAO))
-    mostrar_barra_vida_jogador(TELA, fonte_vida, vida_jogador, jogador.vida)
+    mostrar_barra_vida_jogador(TELA, fonte, vida_jogador, jogador.vida)
+    mostrar_horda(TELA, fonte_horda, numero_horda)
 
     grupo_jogador.draw(TELA)
     
@@ -213,10 +261,6 @@ while rodando:
 
     grupo_tiros.update()
     grupo_tiros.draw(TELA)
-
-    if random.randint(1, 100) == 1: # A cada 100 frames, spawna um inimigo
-        novo_inimigo = Inimigo(tipo="normal")
-        grupo_inimigos.add(novo_inimigo)
 
     grupo_inimigos.update()
     grupo_inimigos.draw(TELA)
@@ -229,6 +273,7 @@ while rodando:
             inimigo.vida -= tiro.dano
 
             if inimigo.vida <= 0:
+                inimigos_derrotados_na_horda += 1
                 inimigo.kill()
     for jogador, lista_inimigos_atancando in colisoes_inimigo_jogador.items():
         for inimigo in lista_inimigos_atancando:
