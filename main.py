@@ -195,6 +195,19 @@ class Jogador(pygame.sprite.Sprite):
         self.rect.centery = posicao_y
         self.vida = 100
 
+        self.duracao_super = 5000
+        self.meta_super = 2
+        self.tempo_inicio_super = 0
+        self.super_ativo = False
+        self.abates_para_super = 0
+
+        self.tipo_super = "LASER"
+    def update(self):
+        if self.super_ativo:
+            tempo_atual = pygame.time.get_ticks()
+            if tempo_atual - self.tempo_inicio_super > self.duracao_super:
+                self.super_ativo = False
+
 
 class ItemCura(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -363,14 +376,15 @@ while rodando:
             sys.exit()
         if evento.type == pygame.KEYDOWN:
             if evento.key == pygame.K_SPACE:
-                angulo_radiano = math.radians(angulo)
-                
-                ponta_x = canhao_x + altura_cano * math.cos(angulo_radiano)
-                ponta_y = canhao_y - altura_cano * math.sin(angulo_radiano)
-                novo_tiro = Tiro(ponta_x, ponta_y, angulo, velocidade_tiro, gravidade_tiro)
-                grupo_tiros.add(novo_tiro)
+                if jogador.tipo_super != "LASER" or jogador.super_ativo is False:
+                    angulo_radiano = math.radians(angulo)
+                    
+                    ponta_x = canhao_x + altura_cano * math.cos(angulo_radiano)
+                    ponta_y = canhao_y - altura_cano * math.sin(angulo_radiano)
+                    novo_tiro = Tiro(ponta_x, ponta_y, angulo, velocidade_tiro, gravidade_tiro)
+                    grupo_tiros.add(novo_tiro)
 
-    tempo_atual = pygame.time.get_ticks()
+        tempo_atual = pygame.time.get_ticks()
 
     if len(fila_espera) > 0 and len(grupo_inimigos) < limite_inimigo_tela: 
         if tempo_atual - ultimo_spawn > intervalo_spawn:
@@ -437,6 +451,29 @@ while rodando:
     grupo_inimigos.update(jogador)
     grupo_inimigos.draw(TELA)
 
+    if jogador.super_ativo:
+        if jogador.tipo_super == "LASER":
+            angulo_radiano = math.radians(angulo)
+            
+            origem_x = canhao_x + altura_cano * math.cos(angulo_radiano)
+            origem_y = canhao_y - altura_cano * math.sin(angulo_radiano)
+                 
+            angulo_rad = math.radians(angulo)
+            
+            comprimento_laser = 500
+                
+            fim_x = origem_x + comprimento_laser * math.cos(angulo_rad)
+            fim_y = origem_y - comprimento_laser * math.sin(angulo_rad)
+                
+            espessura_laser = 8
+            pygame.draw.line(TELA, "#e94747", (origem_x, origem_y), (fim_x, fim_y), espessura_laser)
+            
+            for inimigo in grupo_inimigos:
+                if inimigo.rect.clipline((origem_x, origem_y), (fim_x, fim_y)):
+                    inimigo.vida -= 5 
+                    if inimigo.vida <= 0:
+                        inimigo.kill()
+
 
     colisoes_tiro_inimigo = pygame.sprite.groupcollide(grupo_tiros, grupo_inimigos, True, False)
     colisoes_inimigo_jogador = pygame.sprite.groupcollide(grupo_jogador, grupo_inimigos, False, False)
@@ -458,6 +495,14 @@ while rodando:
 
             if inimigo.vida <= 0:
                 inimigo.kill()
+
+                if jogador.super_ativo is False:
+                    jogador.abates_para_super += 1
+
+                    if jogador.abates_para_super >= jogador.meta_super:
+                        jogador.super_ativo = True
+                        jogador.abates_para_super = 0
+                        jogador.tempo_inicio_super = tempo_atual
     for jogador, lista_inimigos_atancando in colisoes_inimigo_jogador.items():
         for inimigo in lista_inimigos_atancando:
             jogador.vida -= inimigo.dano
