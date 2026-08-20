@@ -35,14 +35,6 @@ gravidade_tiro_ativa = False
 
 vida_jogador = 100
 
-numero_horda = 4
-inimigos_derrotados_na_horda = 0
-inimigos_proxima_horda = 5
-intervalo_spawn = 2000
-ultimo_spawn = 0
-horda_ativa = True
-limite_inimigo_tela = 10
-
 
 class Tiro(pygame.sprite.Sprite):
     def __init__(self, x, y, angulo, velocidade, gravidade):
@@ -195,6 +187,43 @@ def mostrar_horda(tela, fonte, numero_horda):
     
     tela.blit(surf_texto, rect_texto)
 
+def calcular_horda(orcamento, horda):
+    fila_inimigos = []
+    saldo = orcamento
+
+    custo_inimigo_normal = 10
+    custo_inimigo_nave = 50
+
+    while saldo >= custo_inimigo_normal:
+        if horda >= 3:
+            escolha = random.choice(["normal", "nave"])
+        else:
+            escolha = "normal"
+
+        if escolha == "normal":
+            novo_inimigo = Inimigo(tipo="normal") 
+            fila_inimigos.append(novo_inimigo)
+            saldo -= custo_inimigo_normal
+        elif escolha == "nave":
+            novo_inimigo = Inimigo(tipo="nave") 
+            fila_inimigos.append(novo_inimigo)
+            saldo -= custo_inimigo_nave
+    return fila_inimigos
+
+def calcular_orcamento_horda(horda):
+    pontos_base = 100
+    return pontos_base * 1.5**horda
+
+numero_horda = 1
+orcamento_atual = calcular_orcamento_horda(numero_horda)
+fila_espera = calcular_horda(orcamento_atual, numero_horda)
+
+intervalo_spawn = 2000
+ultimo_spawn = 0
+limite_inimigo_tela = 10
+
+horda_ativa = True
+
 while rodando:
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
@@ -211,23 +240,24 @@ while rodando:
 
     tempo_atual = pygame.time.get_ticks()
 
-    if horda_ativa and len(grupo_inimigos) < limite_inimigo_tela: 
+    if len(fila_espera) > 0 and len(grupo_inimigos) < limite_inimigo_tela: 
         if tempo_atual - ultimo_spawn > intervalo_spawn:
-            novo_inimigo = Inimigo(tipo="normal") 
-            grupo_inimigos.add(novo_inimigo)
+            
+            proximo_inimigo = fila_espera.pop(0)
+            grupo_inimigos.add(proximo_inimigo)
+            
             ultimo_spawn = tempo_atual
 
-    if inimigos_derrotados_na_horda >= inimigos_proxima_horda:
+    if len(fila_espera) == 0 and len(grupo_inimigos) == 0:
         numero_horda += 1
-        inimigos_derrotados_na_horda = 0
-
-        inimigos_proxima_horda = int(inimigos_proxima_horda * 1.4) 
+    
+        novo_orcamento = calcular_orcamento_horda(numero_horda)
+        fila_espera = calcular_horda(novo_orcamento, numero_horda)
 
         intervalo_spawn = max(400, int(intervalo_spawn * 0.9))
 
         if numero_horda % 5 == 0:
             limite_inimigo_tela = random.randint(11, 15)
-            intervalo_spawn = random.randint(200, 300)
         else:
             limite_inimigo_tela = 10
 
@@ -273,7 +303,6 @@ while rodando:
             inimigo.vida -= tiro.dano
 
             if inimigo.vida <= 0:
-                inimigos_derrotados_na_horda += 1
                 inimigo.kill()
     for jogador, lista_inimigos_atancando in colisoes_inimigo_jogador.items():
         for inimigo in lista_inimigos_atancando:
