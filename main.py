@@ -65,38 +65,47 @@ class Tiro(pygame.sprite.Sprite):
             self.kill()
 
 class Inimigo(pygame.sprite.Sprite):
-    def __init__(self, tipo="normal"):
+    def __init__(self, tipo="normal", pode_crescer=False):
         super().__init__()
         self.tipo = tipo
 
         self.vem_direcao = None
-        self.largura = 30
-        self.altura = 30
-
         self.dano = 5
+
+        self.pode_crescer = pode_crescer
+        self.escala_atual = 1.0
+        self.limite_escala = random.choice([2.0, 2.5])
+        self.taxa_crescimento = 0.005
+
+        self.tamanho_base_triangulo = 50
 
         if self.tipo == "boss":
             self.largura = 100
             self.altura = 100
-            self.image = pygame.Surface((100, 100))
-            self.image.fill((255, 0, 0)) # Boss é vermelho
+            self.imagem_original = pygame.Surface((100, 100))
+            self.imagem_original.fill((255, 0, 0)) 
             self.velocidade = 1
             self.vida = 500
+            
         elif self.tipo == "normal":
-            self.image = pygame.Surface((30, 30))
-            self.image.fill((0, 255, 0))
+            self.largura = 30
+            self.altura = 30
+            self.imagem_original = pygame.Surface((30, 30))
+            self.imagem_original.fill((0, 255, 0)) 
             self.velocidade = random.randint(1, 2)
             self.vida = 10
-        elif self.tipo == "nave":
-            self.image = pygame.Surface((50, 50), pygame.SRCALPHA)
-
-            pontos = [(0, 0), (50, 0), (25, 50)]
+            self.pode_crescer = True
             
-            pygame.draw.polygon(self.image, "#1e43e7", pontos)
-
+        elif self.tipo == "nave":
+            self.largura = 50
+            self.altura = 50
+            self.imagem_original = pygame.Surface((50, 50), pygame.SRCALPHA)
+            pontos = [(0, 0), (50, 0), (25, 50)]
+            pygame.draw.polygon(self.imagem_original, "#1e43e7", pontos)
             self.velocidade = random.randint(1, 2)
             self.vida = 5
-            
+
+        self.image = self.imagem_original.copy()
         self.rect = self.image.get_rect()
         
         if self.tipo == "boss":
@@ -104,7 +113,7 @@ class Inimigo(pygame.sprite.Sprite):
             self.rect.y = -100
         elif self.tipo == "normal":
             self.rect.x = random.choice([-40, 920])
-            if self.rect.x ==  -40:
+            if self.rect.x == -40:
                 self.vem_direcao = "ESQUERDA"
             else:
                 self.vem_direcao = "DIREITA"
@@ -125,8 +134,6 @@ class Inimigo(pygame.sprite.Sprite):
             delta_x  = jogador.rect.x - self.rect.x
             delta_y = jogador.rect.y - self.rect.y
 
-            movimento_x = movimento_y = 0
-
             distancia = math.sqrt(delta_x**2 + delta_y**2)
 
             if distancia == 0:
@@ -144,13 +151,31 @@ class Inimigo(pygame.sprite.Sprite):
         if self.tipo == "normal" and random.random() < 0.005 and self.largura < 180: 
             self.largura += 30
             self.altura += 30
-            self.image = pygame.transform.scale(self.image, (self.largura, self.altura))
+            
+            self.image = pygame.transform.scale(self.imagem_original, (self.largura, self.altura))
+            
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
+            
             self.vida += 5
             self.dano += 5
             nova_velocidade = 60 / self.largura
             self.velocidade = max(1.0, nova_velocidade)
             self.mudar_cor()
+       
+        elif self.tipo != "normal" and self.pode_crescer and self.escala_atual < self.limite_escala:
+            self.escala_atual += self.taxa_crescimento
+
+            nova_dimensao = int(self.tamanho_base_triangulo * self.escala_atual)
+
+
+            self.image = pygame.transform.scale(self.imagem_original, (nova_dimensao, nova_dimensao))
+
+            self.rect = self.image.get_rect(center=self.rect.center)
+
+            self.dano += self.taxa_crescimento
+            self.vida += 0.05
+            self.vida = min(60, self.vida)
+
     def mudar_cor(self):
         self.image.fill(dicionario_cor_inimigos[self.largura])
 
@@ -226,6 +251,8 @@ def calcular_horda(orcamento, horda, tipo_horda):
     custo_inimigo_normal = 10
     custo_inimigo_nave = 50
 
+    pode_crescer = False
+
     while saldo >= custo_inimigo_normal:
         if tipo_horda == "areo":
             escolha = "nave"
@@ -241,7 +268,13 @@ def calcular_horda(orcamento, horda, tipo_horda):
             fila_inimigos.append(novo_inimigo)
             saldo -= custo_inimigo_normal
         elif escolha == "nave":
-            novo_inimigo = Inimigo(tipo="nave") 
+            if tipo_horda == "areo":
+                if random.random() < chance_nave_crescer_areo:
+                    pode_crescer = True
+            else:
+                if random.random() < chance_nave_crescer:
+                    pode_crescer = True
+            novo_inimigo = Inimigo(tipo="nave", pode_crescer=pode_crescer) 
             fila_inimigos.append(novo_inimigo)
             saldo -= custo_inimigo_nave
     return fila_inimigos
@@ -329,8 +362,10 @@ while rodando:
     
         novo_orcamento = calcular_orcamento_horda(numero_horda)
         fila_espera = calcular_horda(novo_orcamento, numero_horda, tipo_horda_atual)
-
-        intervalo_spawn = max(400, int(intervalo_spawn * 0.9))
+        if numero_horda % 5 == 0:
+            intervalo_spawn = random.randint(200, 350)
+        else:
+            intervalo_spawn = max(400, int(intervalo_spawn * 0.9))
 
 
     teclas = pygame.key.get_pressed()

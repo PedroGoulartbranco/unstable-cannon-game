@@ -8,3 +8,6 @@ dicionario_cor_inimigos = {
 }
 
 ALTURA_CHAO = 530
+
+chance_nave_crescer = 0.25
+chance_nave_crescer_areo = 0.70
