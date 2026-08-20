@@ -81,35 +81,68 @@ class Inimigo(pygame.sprite.Sprite):
             self.image.fill((255, 0, 0)) # Boss é vermelho
             self.velocidade = 1
             self.vida = 500
-        else:
+        elif self.tipo == "normal":
             self.image = pygame.Surface((30, 30))
             self.image.fill((0, 255, 0))
             self.velocidade = random.randint(1, 2)
             self.vida = 10
+        elif self.tipo == "nave":
+            self.image = pygame.Surface((50, 50), pygame.SRCALPHA)
+
+            pontos = [(0, 0), (50, 0), (25, 50)]
+            
+            pygame.draw.polygon(self.image, "#1e43e7", pontos)
+
+            self.velocidade = random.randint(1, 2)
+            self.vida = 5
             
         self.rect = self.image.get_rect()
         
         if self.tipo == "boss":
             self.rect.x = random.randint(0, 700)
             self.rect.y = -100
-        else:
+        elif self.tipo == "normal":
             self.rect.x = random.choice([-40, 920])
             if self.rect.x ==  -40:
                 self.vem_direcao = "ESQUERDA"
             else:
                 self.vem_direcao = "DIREITA"
             self.rect.y = ALTURA_CHAO - 30
+        elif self.tipo == "nave":
+            self.rect.x = random.randint(0, 900)
+            self.rect.y = -40
 
-    def update(self):
+    def update(self, jogador):
         if self.tipo == "boss":
             self.rect.y += self.velocidade
-        else:
+        elif self.tipo == "normal":
             if self.vem_direcao == "ESQUERDA":
                 self.rect.x += self.velocidade 
             else:
-                self.rect.x -= self.velocidade 
+                self.rect.x -= self.velocidade
+        elif self.tipo == "nave":
+            delta_x  = jogador.rect.x - self.rect.x
+            delta_y = jogador.rect.y - self.rect.y
+
+            movimento_x = movimento_y = 0
+
+            distancia = math.sqrt(delta_x**2 + delta_y**2)
+
+            if distancia == 0:
+                return 0, 0
+
+            if distancia <= self.velocidade:
+                return delta_x, delta_y
+
+            vetor_x = delta_x / distancia
+            vetor_y = delta_y / distancia
+
+            print(f"Vetor x:{vetor_x}\nVetor y: {vetor_y}")
+
+            self.rect.x += vetor_x * self.velocidade
+            self.rect.y  += vetor_y * self.velocidade
             
-        if self.tipo != "boss" and random.random() < 0.005 and self.largura < 180: 
+        if self.tipo == "normal" and random.random() < 0.005 and self.largura < 180: 
             self.largura += 30
             self.altura += 30
             self.image = pygame.transform.scale(self.image, (self.largura, self.altura))
@@ -214,7 +247,7 @@ def calcular_orcamento_horda(horda):
     pontos_base = 100
     return pontos_base * 1.5**horda
 
-numero_horda = 1
+numero_horda = 3
 orcamento_atual = calcular_orcamento_horda(numero_horda)
 fila_espera = calcular_horda(orcamento_atual, numero_horda)
 
@@ -292,7 +325,7 @@ while rodando:
     grupo_tiros.update()
     grupo_tiros.draw(TELA)
 
-    grupo_inimigos.update()
+    grupo_inimigos.update(jogador)
     grupo_inimigos.draw(TELA)
 
     colisoes_tiro_inimigo = pygame.sprite.groupcollide(grupo_tiros, grupo_inimigos, True, False)
