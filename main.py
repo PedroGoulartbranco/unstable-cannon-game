@@ -196,7 +196,7 @@ class Jogador(pygame.sprite.Sprite):
         self.vida = 100
 
         self.duracao_super = 10000
-        self.meta_super = 30
+        self.meta_super = 1
         self.tempo_inicio_super = 0
         self.super_ativo = False
         self.abates_para_super = 0
@@ -352,16 +352,20 @@ def desenhar_texto_horda(tela, nome_horda_atual):
         else:
             mostrar_texto = False
 
-def desenhar_barra_progresso_super(superficie, x, y, largura, altura, atual, maximo, cor_borda="#0e0d0d"):
+def desenhar_barra_progresso_super(superficie, x, y, largura, altura, atual, maximo, super_ativo, tempo_iniciado, tempo_maximo=15,cor_borda="#0e0d0d"):
     if maximo <= 0:
         maximo = 1
 
     cor_preenchimento = "#19E073"
     if atual >= maximo:
         cor_preenchimento = "#16e916"
-        
-    porcentagem = max(0, min(atual / maximo, 1.0))
-    
+
+    if super_ativo:
+        tempo_atual = tempo_maximo - tempo_iniciado
+        porcentagem = max(0, min(tempo_atual / tempo_maximo, 1.0))
+    else:
+        porcentagem = max(0, min(atual / maximo, 1.0))
+
     pygame.draw.rect(superficie, cor_borda, (x, y, largura, altura), 1)
 
     largura_atual = largura * porcentagem
@@ -478,7 +482,10 @@ while rodando:
     largura_barra_super, 
     altura_barra_super, 
     jogador.abates_para_super, 
-    jogador.meta_super
+    jogador.meta_super,
+    jogador.super_ativo,
+    jogador.tempo_inicio_super,
+    jogador.duracao_super
     )
 
     if jogador.super_ativo:
