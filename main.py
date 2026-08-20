@@ -3,6 +3,7 @@ import pygame
 import math
 import random
 from config import *
+from matrizes import *
 
 pygame.init()
 
@@ -191,6 +192,22 @@ class Jogador(pygame.sprite.Sprite):
         self.rect.centerx = posicao_x
         self.rect.centery = posicao_y
         self.vida = 100
+
+
+class ItemCura(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        
+        self.image = criar_sprite_por_matriz(matriz_coracao)
+        self.rect = self.image.get_rect(center=(x, y))
+        
+        self.velocidade_queda = 2
+        self.valor_cura = 25
+
+    def update(self):
+        self.rect.y += self.velocidade_queda
+        if self.rect.y > ALTURA_CHAO:
+            self.kill()
 
 grupo_tiros = pygame.sprite.Group()
 grupo_inimigos = pygame.sprite.Group()
