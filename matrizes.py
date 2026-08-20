@@ -17,7 +17,7 @@ matriz_coracao = [
     [_, _, _, V, _, _, _]
 ]
 
-def criar_sprite_por_matriz(matriz, tamanho_pixel=4):
+def criar_sprite_por_matriz(matriz, tamanho_pixel=6):
     linhas = len(matriz)
     colunas = len(matriz[0])
     

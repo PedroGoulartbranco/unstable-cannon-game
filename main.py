@@ -428,8 +428,6 @@ while rodando:
     
     TELA.blit(cano_rotacionado, cano_rect)
 
-    TELA.blit(cano_rotacionado, cano_rect)
-
     grupo_tiros.update()
     grupo_tiros.draw(TELA)
 
@@ -439,8 +437,20 @@ while rodando:
     grupo_inimigos.update(jogador)
     grupo_inimigos.draw(TELA)
 
+
     colisoes_tiro_inimigo = pygame.sprite.groupcollide(grupo_tiros, grupo_inimigos, True, False)
     colisoes_inimigo_jogador = pygame.sprite.groupcollide(grupo_jogador, grupo_inimigos, False, False)
+
+    if len(grupo_coracao) >= 1:
+        colisoes_tiro_coracao = pygame.sprite.groupcollide(grupo_tiros, grupo_coracao, True, False)
+        for tiro, lista_coracao_atingido in colisoes_tiro_coracao.items():
+                for coracao in lista_coracao_atingido:
+                    jogador.vida += coracao.valor_cura
+                    coracao.kill()
+
+                    if jogador.vida >= 100:
+                        jogador.vida = 100
+
 
     for tiro, lista_inimigos_atingidos in colisoes_tiro_inimigo.items():
         for inimigo in lista_inimigos_atingidos:
