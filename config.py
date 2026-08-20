@@ -13,3 +13,6 @@ chance_nave_crescer = 0.25
 chance_nave_crescer_areo = 0.70
 
 largura_laser = 10
+
+largura_barra_super = 80
+altura_barra_super = 15

@@ -352,6 +352,25 @@ def desenhar_texto_horda(tela, nome_horda_atual):
         else:
             mostrar_texto = False
 
+def desenhar_barra_progresso_super(superficie, x, y, largura, altura, atual, maximo, cor_borda="#0e0d0d"):
+    if maximo <= 0:
+        maximo = 1
+
+    cor_preenchimento = "#19E073"
+    if atual >= maximo:
+        cor_preenchimento = "#16e916"
+        
+    porcentagem = max(0, min(atual / maximo, 1.0))
+    
+    pygame.draw.rect(superficie, cor_borda, (x, y, largura, altura), 1)
+
+    largura_atual = largura * porcentagem
+    if largura_atual > 0:
+        pygame.draw.rect(superficie, cor_preenchimento, (x, y, largura_atual, altura))
+
+barra_x_super = jogador.rect.centerx - (largura_barra_super // 2)
+barra_y_super = jogador.rect.bottom + 10
+
 numero_horda = 4
 orcamento_atual = calcular_orcamento_horda(numero_horda)
 fila_espera = calcular_horda(orcamento_atual, numero_horda, "normal")
@@ -451,6 +470,16 @@ while rodando:
 
     grupo_inimigos.update(jogador)
     grupo_inimigos.draw(TELA)
+
+    desenhar_barra_progresso_super(
+    TELA, 
+    barra_x_super, 
+    barra_y_super, 
+    largura_barra_super, 
+    altura_barra_super, 
+    jogador.abates_para_super, 
+    jogador.meta_super
+    )
 
     if jogador.super_ativo:
         if jogador.tipo_super == "LASER":
