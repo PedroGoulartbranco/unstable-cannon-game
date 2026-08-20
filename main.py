@@ -16,6 +16,7 @@ VERDE = "#806e58"
 
 fonte = pygame.font.SysFont(None, 20)
 fonte_horda = pygame.font.SysFont(None, 30)
+fonte_gigante = pygame.font.SysFont("Arial", 80, bold=True)
 # Relógio para controlar o FPS
 relogio = pygame.time.Clock()
 
@@ -137,8 +138,6 @@ class Inimigo(pygame.sprite.Sprite):
             vetor_x = delta_x / distancia
             vetor_y = delta_y / distancia
 
-            print(f"Vetor x:{vetor_x}\nVetor y: {vetor_y}")
-
             self.rect.x += vetor_x * self.velocidade
             self.rect.y  += vetor_y * self.velocidade
             
@@ -229,7 +228,7 @@ def calcular_horda(orcamento, horda, tipo_horda):
 
     while saldo >= custo_inimigo_normal:
         if tipo_horda == "areo":
-            escolha == "nave"
+            escolha = "nave"
             custo_inimigo_nave = custo_inimigo_normal
         elif tipo_horda == "normal":
             if horda >= 3:
@@ -251,9 +250,32 @@ def calcular_orcamento_horda(horda):
   pontos_base = 100
   return pontos_base + (20 * (horda**1.3))
 
-numero_horda = 3
+def disparar_texto_horda(nome):
+    global mostrar_texto, tempo_inicio_texto, nome_horda_atual
+    if nome == "areo":
+        nome_horda_atual ="FLY"
+        print(nome_horda_atual)
+    mostrar_texto = True
+    tempo_inicio_texto = pygame.time.get_ticks()
+
+def desenhar_texto_horda(tela, nome_horda_atual):
+    global mostrar_texto
+    
+    if mostrar_texto:
+        tempo_atual = pygame.time.get_ticks()
+        
+        if tempo_atual - tempo_inicio_texto < 3000:
+            texto_surf = fonte_gigante.render(f"HORDA: {nome_horda_atual}!", True, "#faec28")
+            
+            texto_rect = texto_surf.get_rect(center=(450, 300))
+            
+            tela.blit(texto_surf, texto_rect)
+        else:
+            mostrar_texto = False
+
+numero_horda = 4
 orcamento_atual = calcular_orcamento_horda(numero_horda)
-fila_espera = calcular_horda(orcamento_atual, numero_horda)
+fila_espera = calcular_horda(orcamento_atual, numero_horda, "normal")
 
 intervalo_spawn = 2000
 ultimo_spawn = 0
@@ -263,6 +285,10 @@ horda_ativa = True
 
 tipo_horda_atual = "normal"
 lista_tipo_hordas = ["normal", "areo"]
+
+tempo_inicio_texto = 0
+nome_horda_atual = ""
+mostrar_texto = False
 
 while rodando:
     for evento in pygame.event.get():
@@ -293,7 +319,10 @@ while rodando:
 
         if numero_horda % 5 == 0:
             tipo_horda_atual = random.choice(lista_tipo_hordas)
+            tipo_horda_atual = "areo"
             limite_inimigo_tela = random.randint(11, 15)
+            if tipo_horda_atual != "normal":
+                disparar_texto_horda(tipo_horda_atual)
         else:
             tipo_horda_atual = "normal"
             limite_inimigo_tela = 10
@@ -351,6 +380,8 @@ while rodando:
         for inimigo in lista_inimigos_atancando:
             jogador.vida -= inimigo.dano
             inimigo.kill()
+
+    desenhar_texto_horda(TELA, nome_horda_atual)
 
     pygame.display.flip()
     relogio.tick(60)
