@@ -37,6 +37,8 @@ gravidade_tiro_ativa = False
 
 vida_jogador = 100
 
+tempo_ultimo_coracao = 0
+intervalo_coracao = 20000
 
 class Tiro(pygame.sprite.Sprite):
     def __init__(self, x, y, angulo, velocidade, gravidade):
@@ -209,10 +211,24 @@ class ItemCura(pygame.sprite.Sprite):
         if self.rect.y > ALTURA_CHAO:
             self.kill()
 
+def verificar_criar_coracao(tempo_atual, tempo_ultimo_coracao, intervalo_entre_coracao, vida):
+    if vida == 100:
+        print(tempo_ultimo_coracao)
+        return tempo_ultimo_coracao
+    elif tempo_atual - tempo_ultimo_coracao > intervalo_entre_coracao:
+        x = random.randint(0, 860)
+        y = -40
+        coracao = ItemCura(x, y)
+        grupo_coracao.add(coracao)
+        tempo_ultimo_coracao = tempo_atual
+        return tempo_ultimo_coracao
+    return tempo_ultimo_coracao
+
 grupo_tiros = pygame.sprite.Group()
 grupo_inimigos = pygame.sprite.Group()
 jogador = Jogador(int(LARGURA / 2), ALTURA_CHAO)
 grupo_jogador = pygame.sprite.GroupSingle(jogador)
+grupo_coracao = pygame.sprite.Group()
 
 canhao_x = jogador.rect.centerx
 canhao_y = jogador.rect.centery - 10
@@ -392,7 +408,8 @@ while rodando:
     if teclas[pygame.K_RIGHT]:
         if angulo > 0:
                 angulo -= 2
-    print(angulo)
+
+    tempo_ultimo_coracao = verificar_criar_coracao(tempo_atual, tempo_ultimo_coracao, intervalo_coracao, jogador.vida)
 
     canhao_x = jogador.rect.centerx
     canhao_y = jogador.rect.centery - 5
@@ -415,6 +432,9 @@ while rodando:
 
     grupo_tiros.update()
     grupo_tiros.draw(TELA)
+
+    grupo_coracao.update()
+    grupo_coracao.draw(TELA)
 
     grupo_inimigos.update(jogador)
     grupo_inimigos.draw(TELA)
