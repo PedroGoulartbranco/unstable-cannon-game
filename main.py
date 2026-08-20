@@ -195,8 +195,8 @@ class Jogador(pygame.sprite.Sprite):
         self.rect.centery = posicao_y
         self.vida = 100
 
-        self.duracao_super = 5000
-        self.meta_super = 2
+        self.duracao_super = 10000
+        self.meta_super = 30
         self.tempo_inicio_super = 0
         self.super_ativo = False
         self.abates_para_super = 0
@@ -227,7 +227,7 @@ class ItemCura(pygame.sprite.Sprite):
 def verificar_criar_coracao(tempo_atual, tempo_ultimo_coracao, intervalo_entre_coracao, vida):
     if vida == 100:
         print(tempo_ultimo_coracao)
-        return tempo_ultimo_coracao
+        return tempo_atual
     elif tempo_atual - tempo_ultimo_coracao > intervalo_entre_coracao:
         x = random.randint(0, 860)
         y = -40
@@ -439,6 +439,7 @@ while rodando:
     mostrar_horda(TELA, fonte_horda, numero_horda)
 
     grupo_jogador.draw(TELA)
+    grupo_jogador.update()
     
     TELA.blit(cano_rotacionado, cano_rect)
 
@@ -454,7 +455,7 @@ while rodando:
     if jogador.super_ativo:
         if jogador.tipo_super == "LASER":
             angulo_radiano = math.radians(angulo)
-            
+
             origem_x = canhao_x + altura_cano * math.cos(angulo_radiano)
             origem_y = canhao_y - altura_cano * math.sin(angulo_radiano)
                  
@@ -473,6 +474,14 @@ while rodando:
                     inimigo.vida -= 5 
                     if inimigo.vida <= 0:
                         inimigo.kill()
+
+            for coracao in grupo_coracao:
+                if coracao.rect.clipline((origem_x, origem_y), (fim_x, fim_y)):
+                    jogador.vida += coracao.valor_cura
+                    coracao.kill()
+                    
+                    if jogador.vida >= 100:
+                        jogador.vida = 100
 
 
     colisoes_tiro_inimigo = pygame.sprite.groupcollide(grupo_tiros, grupo_inimigos, True, False)
