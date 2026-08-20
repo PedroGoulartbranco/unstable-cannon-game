@@ -220,7 +220,7 @@ def mostrar_horda(tela, fonte, numero_horda):
     
     tela.blit(surf_texto, rect_texto)
 
-def calcular_horda(orcamento, horda):
+def calcular_horda(orcamento, horda, tipo_horda):
     fila_inimigos = []
     saldo = orcamento
 
@@ -228,10 +228,14 @@ def calcular_horda(orcamento, horda):
     custo_inimigo_nave = 50
 
     while saldo >= custo_inimigo_normal:
-        if horda >= 3:
-            escolha = random.choice(["normal", "nave"])
-        else:
-            escolha = "normal"
+        if tipo_horda == "areo":
+            escolha == "nave"
+            custo_inimigo_nave = custo_inimigo_normal
+        elif tipo_horda == "normal":
+            if horda >= 3:
+                escolha = random.choice(["normal", "nave"])
+            else:
+                escolha = "normal"
 
         if escolha == "normal":
             novo_inimigo = Inimigo(tipo="normal") 
@@ -244,8 +248,8 @@ def calcular_horda(orcamento, horda):
     return fila_inimigos
 
 def calcular_orcamento_horda(horda):
-    pontos_base = 100
-    return pontos_base * 1.5**horda
+  pontos_base = 100
+  return pontos_base + (20 * (horda**1.3))
 
 numero_horda = 3
 orcamento_atual = calcular_orcamento_horda(numero_horda)
@@ -256,6 +260,9 @@ ultimo_spawn = 0
 limite_inimigo_tela = 10
 
 horda_ativa = True
+
+tipo_horda_atual = "normal"
+lista_tipo_hordas = ["normal", "areo"]
 
 while rodando:
     for evento in pygame.event.get():
@@ -283,16 +290,19 @@ while rodando:
 
     if len(fila_espera) == 0 and len(grupo_inimigos) == 0:
         numero_horda += 1
+
+        if numero_horda % 5 == 0:
+            tipo_horda_atual = random.choice(lista_tipo_hordas)
+            limite_inimigo_tela = random.randint(11, 15)
+        else:
+            tipo_horda_atual = "normal"
+            limite_inimigo_tela = 10
     
         novo_orcamento = calcular_orcamento_horda(numero_horda)
-        fila_espera = calcular_horda(novo_orcamento, numero_horda)
+        fila_espera = calcular_horda(novo_orcamento, numero_horda, tipo_horda_atual)
 
         intervalo_spawn = max(400, int(intervalo_spawn * 0.9))
 
-        if numero_horda % 5 == 0:
-            limite_inimigo_tela = random.randint(11, 15)
-        else:
-            limite_inimigo_tela = 10
 
     teclas = pygame.key.get_pressed()
     if teclas[pygame.K_LEFT]:
