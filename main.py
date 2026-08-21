@@ -470,10 +470,9 @@ while rodando:
                         jogador.jogador_girada_angulo = 1
             elif evento.key == pygame.K_q:
                 print(jogador.abates_para_super)
-                if jogador.abates_para_super >= 1:
-                    print("aqiuiiiiiiii")
+                if jogador.abates_para_super >= 10:
                     angulo_radiano = math.radians(angulo)
-                    jogador.abates_para_super -= 1
+                    jogador.abates_para_super -= 10
                                         
                     ponta_x = canhao_x + altura_cano * math.cos(angulo_radiano)
                     ponta_y = canhao_y - altura_cano * math.sin(angulo_radiano)
@@ -611,17 +610,19 @@ while rodando:
         for inimigo in lista_inimigos_atingidos:
             inimigo.vida -= tiro.dano
 
-            if tiro.tipo != "tiro_grande":
-                tiro.kill()
 
             if inimigo.vida <= 0:
                 inimigo.kill()
 
-                if jogador.super_ativo is False:
+                if jogador.super_ativo is False and tiro.tipo != "tiro_grande":
                     jogador.abates_para_super += 1
 
                     if jogador.abates_para_super >= jogador.meta_super:
                         jogador.pode_ativar_super = True
+            if tiro.tipo != "tiro_grande":
+                tiro.kill()
+                
+                
     for jogador, lista_inimigos_atancando in colisoes_inimigo_jogador.items():
         for inimigo in lista_inimigos_atancando:
             jogador.vida -= inimigo.dano
