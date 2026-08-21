@@ -195,8 +195,10 @@ class Jogador(pygame.sprite.Sprite):
         self.rect.centery = posicao_y
         self.vida = 100
 
+        self.pode_ativar_super = False
+
         self.duracao_super = 10000
-        self.meta_super = 1
+        self.meta_super = 3
         self.tempo_inicio_super = 0
         self.super_ativo = False
         self.abates_para_super = 0
@@ -364,7 +366,7 @@ def desenhar_barra_progresso_super(superficie, x, y, largura, altura, atual, max
         tempo_decorrido = tempo_atual - tempo_iniciado
         tempo_restante = tempo_maximo - tempo_decorrido
         porcentagem = max(0, min(tempo_restante / tempo_maximo, 1.0))
-        cor_preenchimento = "#16e916"
+        cor_preenchimento = "#c9e916"
     else:
         porcentagem = max(0, min(atual / maximo, 1.0))
 
@@ -413,6 +415,12 @@ while rodando:
                     ponta_y = canhao_y - altura_cano * math.sin(angulo_radiano)
                     novo_tiro = Tiro(ponta_x, ponta_y, angulo, velocidade_tiro, gravidade_tiro)
                     grupo_tiros.add(novo_tiro)
+            if evento.key == pygame.K_e:
+                if jogador.pode_ativar_super:
+                    jogador.super_ativo = True
+                    jogador.pode_ativar_super = False
+                    jogador.tempo_inicio_super = tempo_atual
+                    jogador.abates_para_super = 0
 
         tempo_atual = pygame.time.get_ticks()
 
@@ -553,9 +561,7 @@ while rodando:
                     jogador.abates_para_super += 1
 
                     if jogador.abates_para_super >= jogador.meta_super:
-                        jogador.super_ativo = True
-                        jogador.abates_para_super = 0
-                        jogador.tempo_inicio_super = tempo_atual
+                        jogador.pode_ativar_super = True
     for jogador, lista_inimigos_atancando in colisoes_inimigo_jogador.items():
         for inimigo in lista_inimigos_atancando:
             jogador.vida -= inimigo.dano
