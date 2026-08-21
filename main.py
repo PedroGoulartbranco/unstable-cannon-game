@@ -21,9 +21,11 @@ pygame.mixer.init()
 pygame.mixer.music.load(caminho_recurso("music/musica_fundo_1.ogg"))
 som_tiro_basico = pygame.mixer.Sound(caminho_recurso("sons/som_tiro_normal.wav"))
 som_tiro_grande = pygame.mixer.Sound(caminho_recurso("sons/som_tiro_grande.wav"))
+som_dano = pygame.mixer.Sound(caminho_recurso("sons/som_dano.wav"))
 
 som_tiro_basico.set_volume(0.2)
 som_tiro_grande.set_volume(0.2)
+som_dano.set_volume(0.3)
 
 pygame.mixer.music.set_volume(0.6)
 
@@ -628,7 +630,7 @@ while rodando:
     for tiro, lista_inimigos_atingidos in colisoes_tiro_inimigo.items():
         for inimigo in lista_inimigos_atingidos:
             inimigo.vida -= tiro.dano
-
+            som_dano.play()
 
             if inimigo.vida <= 0:
                 inimigo.kill()
@@ -644,6 +646,9 @@ while rodando:
     for jogador, lista_inimigos_atancando in colisoes_inimigo_jogador.items():
         for inimigo in lista_inimigos_atancando:
             jogador.vida -= inimigo.dano
+            som_dano.set_volume(1.0)
+            som_dano.play()
+            som_dano.set_volume(0.3)
             inimigo.kill()
 
     desenhar_texto_horda(TELA, nome_horda_atual)
