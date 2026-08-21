@@ -20,7 +20,10 @@ pygame.mixer.init()
 
 pygame.mixer.music.load(caminho_recurso("music/musica_fundo_1.ogg"))
 som_tiro_basico = pygame.mixer.Sound(caminho_recurso("sons/som_tiro_normal.wav"))
+som_tiro_grande = pygame.mixer.Sound(caminho_recurso("sons/som_tiro_grande.wav"))
+
 som_tiro_basico.set_volume(0.2)
+som_tiro_grande.set_volume(0.2)
 
 pygame.mixer.music.set_volume(0.6)
 
@@ -490,6 +493,7 @@ while rodando:
                     ponta_y = canhao_y - altura_cano * math.sin(angulo_radiano)
                     novo_tiro = Tiro(ponta_x, ponta_y, angulo, 2, gravidade_tiro, tipo="tiro_grande", cor="#ffffff")
                     grupo_tiros.add(novo_tiro)
+                    som_tiro_grande.play()
 
         tempo_atual = pygame.time.get_ticks()
 
