@@ -335,7 +335,7 @@ def calcular_horda(orcamento, horda, tipo_horda):
     return fila_inimigos
 
 def calcular_orcamento_horda(horda):
-  pontos_base = 100
+  pontos_base = 50
   return pontos_base + (20 * (horda**1.3))
 
 def disparar_texto_horda(nome):
@@ -387,6 +387,18 @@ def desenhar_barra_progresso_super(superficie, x, y, largura, altura, atual, max
 
     if largura_atual > 0:
         pygame.draw.rect(superficie, cor_preenchimento, (x + margem, y + margem, largura_atual, altura_interna))
+
+    
+    terco = largura / 3
+    
+    y_inicio = y + 1
+    y_fim = y + altura - 1
+
+    x_terco_1 = int(x + terco)
+    x_terco_2 = int(x + (terco * 2))
+
+    pygame.draw.line(superficie, cor_borda, (x_terco_1, y_inicio), (x_terco_1, y_fim), 1)
+    pygame.draw.line(superficie, cor_borda, (x_terco_2, y_inicio), (x_terco_2, y_fim), 1)
 
 barra_x_super = jogador.rect.centerx - (largura_barra_super // 2)
 barra_y_super = jogador.rect.bottom + 10
