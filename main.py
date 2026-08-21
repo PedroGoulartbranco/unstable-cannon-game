@@ -50,8 +50,10 @@ class Tiro(pygame.sprite.Sprite):
 
         if self.tipo == "tiro_grande":
             alpha = 128
+            self.dano = 1
         else:
             alpha = 255
+            self.dano = 10
         self.imagem_original = pygame.Surface((self.tamanho_base_tiro, self.tamanho_base_tiro), pygame.SRCALPHA)
         
         self.imagem_original.fill(self.cor)
@@ -68,11 +70,9 @@ class Tiro(pygame.sprite.Sprite):
 
         self.gravidade = gravidade
 
-        self.dano = 10
-
         self.limite_escala = 20.0
         self.escala_atual = 1.0
-        self.taxa_crescimento = 0.07
+        self.taxa_crescimento = 0.2
         
     def update(self):
         self.rect.x += self.vel_x
@@ -91,7 +91,7 @@ class Tiro(pygame.sprite.Sprite):
 
                 self.rect = self.image.get_rect(center=self.rect.center)
 
-                self.dano += self.taxa_crescimento
+                self.dano += self.taxa_crescimento * 0.5
                 
         if self.rect.right < 0 or self.rect.left > LARGURA or self.rect.bottom < 0 or self.rect.top > 600:
             self.kill()
@@ -593,7 +593,7 @@ while rodando:
                         jogador.vida = 100
 
 
-    colisoes_tiro_inimigo = pygame.sprite.groupcollide(grupo_tiros, grupo_inimigos, True, False)
+    colisoes_tiro_inimigo = pygame.sprite.groupcollide(grupo_tiros, grupo_inimigos, False, False)
     colisoes_inimigo_jogador = pygame.sprite.groupcollide(grupo_jogador, grupo_inimigos, False, False)
 
     if len(grupo_coracao) >= 1:
@@ -610,6 +610,9 @@ while rodando:
     for tiro, lista_inimigos_atingidos in colisoes_tiro_inimigo.items():
         for inimigo in lista_inimigos_atingidos:
             inimigo.vida -= tiro.dano
+
+            if tiro.tipo != "tiro_grande":
+                tiro.kill()
 
             if inimigo.vida <= 0:
                 inimigo.kill()
