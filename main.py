@@ -46,9 +46,17 @@ class Tiro(pygame.sprite.Sprite):
 
         self.tamanho_base_tiro = 10
         self.cor = cor
+        self.tipo = tipo
 
-        self.imagem_original = pygame.Surface((self.tamanho_base_tiro, self.tamanho_base_tiro))
+        if self.tipo == "tiro_grande":
+            alpha = 128
+        else:
+            alpha = 255
+        self.imagem_original = pygame.Surface((self.tamanho_base_tiro, self.tamanho_base_tiro), pygame.SRCALPHA)
+        
         self.imagem_original.fill(self.cor)
+        self.imagem_original.set_alpha(alpha)
+
         self.image = self.imagem_original.copy()
         self.image.fill(self.cor)
         self.rect = self.image.get_rect(center=(x, y))
@@ -61,8 +69,6 @@ class Tiro(pygame.sprite.Sprite):
         self.gravidade = gravidade
 
         self.dano = 10
-
-        self.tipo = tipo
 
         self.limite_escala = 20.0
         self.escala_atual = 1.0
