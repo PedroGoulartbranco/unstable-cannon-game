@@ -470,7 +470,7 @@ while rodando:
                         jogador.jogador_girada_angulo = 1
             elif evento.key == pygame.K_q:
                 print(jogador.abates_para_super)
-                if jogador.abates_para_super >= 10:
+                if jogador.abates_para_super >= 10 and jogador.super_ativo is False:
                     angulo_radiano = math.radians(angulo)
                     jogador.abates_para_super -= 10
                                         
@@ -494,7 +494,7 @@ while rodando:
 
         if numero_horda % 5 == 0:
             tipo_horda_atual = random.choice(lista_tipo_hordas)
-            tipo_horda_atual = "areo"
+            # tipo_horda_atual = "areo"
             limite_inimigo_tela = random.randint(11, 15)
             if tipo_horda_atual != "normal":
                 disparar_texto_horda(tipo_horda_atual)
@@ -596,11 +596,14 @@ while rodando:
     colisoes_inimigo_jogador = pygame.sprite.groupcollide(grupo_jogador, grupo_inimigos, False, False)
 
     if len(grupo_coracao) >= 1:
-        colisoes_tiro_coracao = pygame.sprite.groupcollide(grupo_tiros, grupo_coracao, True, False)
+        colisoes_tiro_coracao = pygame.sprite.groupcollide(grupo_tiros, grupo_coracao, False, False)
         for tiro, lista_coracao_atingido in colisoes_tiro_coracao.items():
                 for coracao in lista_coracao_atingido:
                     jogador.vida += coracao.valor_cura
                     coracao.kill()
+
+                    if tiro.tipo != "tiro_grande":
+                        tiro.kill()
 
                     if jogador.vida >= 100:
                         jogador.vida = 100
@@ -621,7 +624,6 @@ while rodando:
                         jogador.pode_ativar_super = True
             if tiro.tipo != "tiro_grande":
                 tiro.kill()
-                
                 
     for jogador, lista_inimigos_atancando in colisoes_inimigo_jogador.items():
         for inimigo in lista_inimigos_atancando:
