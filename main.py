@@ -194,11 +194,15 @@ class Jogador(pygame.sprite.Sprite):
         self.rect.centerx = posicao_x
         self.rect.centery = posicao_y
         self.vida = 100
+        self.jogador_girada_angulo = 2
+
+        self.limite_angulo_maior = 180
+        self.limite_angulo_menor = 0
 
         self.pode_ativar_super = False
 
         self.duracao_super = 10000
-        self.meta_super = 3
+        self.meta_super = 30
         self.tempo_inicio_super = 0
         self.super_ativo = False
         self.abates_para_super = 0
@@ -209,6 +213,9 @@ class Jogador(pygame.sprite.Sprite):
             tempo_atual = pygame.time.get_ticks()
             if tempo_atual - self.tempo_inicio_super > self.duracao_super:
                 self.super_ativo = False
+                self.jogador_girada_angulo = 2
+                self.limite_angulo_maior = 180
+                self.limite_angulo_menor = 0
 
 
 class ItemCura(pygame.sprite.Sprite):
@@ -384,7 +391,7 @@ def desenhar_barra_progresso_super(superficie, x, y, largura, altura, atual, max
 barra_x_super = jogador.rect.centerx - (largura_barra_super // 2)
 barra_y_super = jogador.rect.bottom + 10
 
-numero_horda = 4
+numero_horda = 1
 orcamento_atual = calcular_orcamento_horda(numero_horda)
 fila_espera = calcular_horda(orcamento_atual, numero_horda, "normal")
 
@@ -421,6 +428,8 @@ while rodando:
                     jogador.pode_ativar_super = False
                     jogador.tempo_inicio_super = tempo_atual
                     jogador.abates_para_super = 0
+                    if jogador.tipo_super == "LASER":
+                        jogador.jogador_girada_angulo = 1
 
         tempo_atual = pygame.time.get_ticks()
 
@@ -455,11 +464,11 @@ while rodando:
 
     teclas = pygame.key.get_pressed()
     if teclas[pygame.K_LEFT]:
-            if angulo < 180:
-                angulo += 2
+        angulo += jogador.jogador_girada_angulo
+        angulo = max(0, min(angulo, 180))
     if teclas[pygame.K_RIGHT]:
-        if angulo > 0:
-                angulo -= 2
+        angulo -= jogador.jogador_girada_angulo
+        angulo = max(0, min(angulo, 180))
 
     tempo_ultimo_coracao = verificar_criar_coracao(tempo_atual, tempo_ultimo_coracao, intervalo_coracao, jogador.vida)
 
@@ -511,12 +520,11 @@ while rodando:
             origem_x = canhao_x + altura_cano * math.cos(angulo_radiano)
             origem_y = canhao_y - altura_cano * math.sin(angulo_radiano)
                  
-            angulo_rad = math.radians(angulo)
             
             comprimento_laser = 500
                 
-            fim_x = origem_x + comprimento_laser * math.cos(angulo_rad)
-            fim_y = origem_y - comprimento_laser * math.sin(angulo_rad)
+            fim_x = origem_x + comprimento_laser * math.cos(angulo_radiano)
+            fim_y = origem_y - comprimento_laser * math.sin(angulo_radiano)
                 
             espessura_laser = 8
             pygame.draw.line(TELA, "#e94747", (origem_x, origem_y), (fim_x, fim_y), espessura_laser)
