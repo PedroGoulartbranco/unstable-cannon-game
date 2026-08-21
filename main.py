@@ -19,6 +19,8 @@ VERDE = "#806e58"
 pygame.mixer.init()
 
 pygame.mixer.music.load(caminho_recurso("music/musica_fundo_1.ogg"))
+som_tiro_basico = pygame.mixer.Sound(caminho_recurso("sons/som_tiro_normal.wav"))
+som_tiro_basico.set_volume(0.2)
 
 pygame.mixer.music.set_volume(0.6)
 
@@ -469,6 +471,7 @@ while rodando:
                     ponta_y = canhao_y - altura_cano * math.sin(angulo_radiano)
                     novo_tiro = Tiro(ponta_x, ponta_y, angulo, velocidade_tiro, gravidade_tiro)
                     grupo_tiros.add(novo_tiro)
+                    som_tiro_basico.play()
             elif evento.key == pygame.K_e:
                 if jogador.pode_ativar_super:
                     jogador.super_ativo = True
