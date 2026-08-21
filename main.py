@@ -10,7 +10,10 @@ pygame.init()
 
 LARGURA, ALTURA = 900, 600
 TELA = pygame.display.set_mode((LARGURA, ALTURA))
-pygame.display.set_caption("Canhão")
+pygame.display.set_caption("Unstable Cannon")
+
+jogo_pausado = True
+mostrar_comandos = True
 
 PRETO = (20, 20, 20)
 BRANCO = (255, 255, 255)
@@ -27,14 +30,17 @@ som_tiro_basico.set_volume(0.2)
 som_tiro_grande.set_volume(0.2)
 som_dano.set_volume(0.3)
 
-pygame.mixer.music.set_volume(0.6)
+pygame.mixer.music.set_volume(0.7)
 
 pygame.mixer.music.play(-1)
 
 fonte = pygame.font.SysFont(None, 20)
 fonte_horda = pygame.font.SysFont(None, 30)
 fonte_gigante = pygame.font.SysFont("Arial", 80, bold=True)
-# Relógio para controlar o FPS
+fonte_titulo = pygame.font.SysFont("arial", 28, bold=True)
+fonte_texto = pygame.font.SysFont("arial", 20)
+
+
 relogio = pygame.time.Clock()
 
 angulo = 90  
@@ -442,6 +448,48 @@ def desenhar_barra_progresso_super(superficie, x, y, largura, altura, atual, max
     pygame.draw.line(superficie, cor_borda, (x_terco_1, y_inicio), (x_terco_1, y_fim), 1)
     pygame.draw.line(superficie, cor_borda, (x_terco_2, y_inicio), (x_terco_2, y_fim), 1)
 
+def desenhar_painel_comandos(superficie, largura=500, altura=400):
+    tela_largura = superficie.get_width()
+    tela_altura = superficie.get_height()
+    
+    x = (tela_largura // 2) - (largura // 2)
+    y = (tela_altura // 2) - (altura // 2)
+
+    painel = pygame.Surface((largura, altura), pygame.SRCALPHA)
+
+    cor_fundo = (15, 15, 20, 210) 
+    painel.fill(cor_fundo)
+    
+    cor_borda = (25, 224, 115) 
+    pygame.draw.rect(painel, cor_borda, (0, 0, largura, altura), 3)
+
+    txt_titulo = fonte_titulo.render("PAUSADO - COMANDOS", True, (255, 255, 255))
+    rect_titulo = txt_titulo.get_rect(center=(largura // 2, 35))
+    painel.blit(txt_titulo, rect_titulo)
+    
+    pygame.draw.line(painel, cor_borda, (20, 60), (largura - 20, 60), 2)
+    
+    comandos = [
+        "WASD / Setas : Mover e Mirar",
+        "ESPAÇO : Tiro Básico",
+        "E / SHIFT : Disparar Super Laser",
+        "P / ESC : Pausar / Retomar",
+        "",
+        "Pressione ESPAÇO para Continuar"
+    ]
+    
+    pos_y = 90
+    for linha in comandos:
+        if linha == "Pressione ESPAÇO para Continuar":
+            txt_linha = fonte_texto.render(linha, True, (255, 230, 0))
+            rect_linha = txt_linha.get_rect(center=(largura // 2, altura - 40))
+            painel.blit(txt_linha, rect_linha)
+        else:
+            txt_linha = fonte_texto.render(linha, True, (220, 220, 220))
+            painel.blit(txt_linha, (30, pos_y))
+            pos_y += 35
+    superficie.blit(painel, (x, y))
+
 barra_x_super = jogador.rect.centerx - (largura_barra_super // 2)
 barra_y_super = jogador.rect.bottom + 10
 
@@ -468,81 +516,111 @@ while rodando:
             pygame.quit()
             sys.exit()
         if evento.type == pygame.KEYDOWN:
-            if evento.key == pygame.K_SPACE:
-                if jogador.tipo_super != "LASER" or jogador.super_ativo is False:
-                    angulo_radiano = math.radians(angulo)
-                    
-                    ponta_x = canhao_x + altura_cano * math.cos(angulo_radiano)
-                    ponta_y = canhao_y - altura_cano * math.sin(angulo_radiano)
-                    novo_tiro = Tiro(ponta_x, ponta_y, angulo, velocidade_tiro, gravidade_tiro)
-                    grupo_tiros.add(novo_tiro)
-                    som_tiro_basico.play()
-            elif evento.key == pygame.K_e:
-                if jogador.pode_ativar_super:
-                    jogador.super_ativo = True
-                    jogador.pode_ativar_super = False
-                    jogador.tempo_inicio_super = tempo_atual
-                    jogador.abates_para_super = 0
-                    if jogador.tipo_super == "LASER":
-                        jogador.jogador_girada_angulo = 1
-            elif evento.key == pygame.K_q:
-                print(jogador.abates_para_super)
-                if jogador.abates_para_super >= 10 and jogador.super_ativo is False:
-                    angulo_radiano = math.radians(angulo)
-                    jogador.abates_para_super -= 10
-                                        
-                    ponta_x = canhao_x + altura_cano * math.cos(angulo_radiano)
-                    ponta_y = canhao_y - altura_cano * math.sin(angulo_radiano)
-                    novo_tiro = Tiro(ponta_x, ponta_y, angulo, 2, gravidade_tiro, tipo="tiro_grande", cor="#ffffff")
-                    grupo_tiros.add(novo_tiro)
-                    som_tiro_grande.play()
+            if jogo_pausado is False:
+                if evento.key == pygame.K_SPACE:
+                    if jogador.tipo_super != "LASER" or jogador.super_ativo is False:
+                        angulo_radiano = math.radians(angulo)
+                        
+                        ponta_x = canhao_x + altura_cano * math.cos(angulo_radiano)
+                        ponta_y = canhao_y - altura_cano * math.sin(angulo_radiano)
+                        novo_tiro = Tiro(ponta_x, ponta_y, angulo, velocidade_tiro, gravidade_tiro)
+                        grupo_tiros.add(novo_tiro)
+                        som_tiro_basico.play()
+                elif evento.key == pygame.K_e:
+                    if jogador.pode_ativar_super:
+                        jogador.super_ativo = True
+                        jogador.pode_ativar_super = False
+                        jogador.tempo_inicio_super = tempo_atual
+                        jogador.abates_para_super = 0
+                        if jogador.tipo_super == "LASER":
+                            jogador.jogador_girada_angulo = 1
+                elif evento.key == pygame.K_q:
+                    print(jogador.abates_para_super)
+                    if jogador.abates_para_super >= 10 and jogador.super_ativo is False:
+                        angulo_radiano = math.radians(angulo)
+                        jogador.abates_para_super -= 10
+                                            
+                        ponta_x = canhao_x + altura_cano * math.cos(angulo_radiano)
+                        ponta_y = canhao_y - altura_cano * math.sin(angulo_radiano)
+                        novo_tiro = Tiro(ponta_x, ponta_y, angulo, 2, gravidade_tiro, tipo="tiro_grande", cor="#ffffff")
+                        grupo_tiros.add(novo_tiro)
+                        som_tiro_grande.play()
 
         tempo_atual = pygame.time.get_ticks()
+    if jogo_pausado is False:
+        if len(fila_espera) > 0 and len(grupo_inimigos) < limite_inimigo_tela: 
+            if tempo_atual - ultimo_spawn > intervalo_spawn:
+                
+                proximo_inimigo = fila_espera.pop(0)
+                grupo_inimigos.add(proximo_inimigo)
+                
+                ultimo_spawn = tempo_atual
 
-    if len(fila_espera) > 0 and len(grupo_inimigos) < limite_inimigo_tela: 
-        if tempo_atual - ultimo_spawn > intervalo_spawn:
-            
-            proximo_inimigo = fila_espera.pop(0)
-            grupo_inimigos.add(proximo_inimigo)
-            
-            ultimo_spawn = tempo_atual
+        if len(fila_espera) == 0 and len(grupo_inimigos) == 0:
+            numero_horda += 1
 
-    if len(fila_espera) == 0 and len(grupo_inimigos) == 0:
-        numero_horda += 1
+            if numero_horda % 5 == 0:
+                tipo_horda_atual = random.choice(lista_tipo_hordas)
+                # tipo_horda_atual = "areo"
+                limite_inimigo_tela = random.randint(11, 15)
+                if tipo_horda_atual != "normal":
+                    disparar_texto_horda(tipo_horda_atual)
+            else:
+                tipo_horda_atual = "normal"
+                limite_inimigo_tela = 10
+        
+            novo_orcamento = calcular_orcamento_horda(numero_horda)
+            fila_espera = calcular_horda(novo_orcamento, numero_horda, tipo_horda_atual)
+            if numero_horda % 5 == 0:
+                intervalo_spawn = random.randint(200, 350)
+            else:
+                intervalo_spawn = max(400, int(intervalo_spawn * 0.9))
 
-        if numero_horda % 5 == 0:
-            tipo_horda_atual = random.choice(lista_tipo_hordas)
-            # tipo_horda_atual = "areo"
-            limite_inimigo_tela = random.randint(11, 15)
-            if tipo_horda_atual != "normal":
-                disparar_texto_horda(tipo_horda_atual)
-        else:
-            tipo_horda_atual = "normal"
-            limite_inimigo_tela = 10
     
-        novo_orcamento = calcular_orcamento_horda(numero_horda)
-        fila_espera = calcular_horda(novo_orcamento, numero_horda, tipo_horda_atual)
-        if numero_horda % 5 == 0:
-            intervalo_spawn = random.randint(200, 350)
-        else:
-            intervalo_spawn = max(400, int(intervalo_spawn * 0.9))
+        teclas = pygame.key.get_pressed()
+        if teclas[pygame.K_LEFT]:
+            angulo += jogador.jogador_girada_angulo
+            angulo = max(0, min(angulo, 180))
+        if teclas[pygame.K_RIGHT]:
+            angulo -= jogador.jogador_girada_angulo
+            angulo = max(0, min(angulo, 180))
 
+        tempo_ultimo_coracao = verificar_criar_coracao(tempo_atual, tempo_ultimo_coracao, intervalo_coracao, jogador.vida)
 
-    teclas = pygame.key.get_pressed()
-    if teclas[pygame.K_LEFT]:
-        angulo += jogador.jogador_girada_angulo
-        angulo = max(0, min(angulo, 180))
-    if teclas[pygame.K_RIGHT]:
-        angulo -= jogador.jogador_girada_angulo
-        angulo = max(0, min(angulo, 180))
-
-    tempo_ultimo_coracao = verificar_criar_coracao(tempo_atual, tempo_ultimo_coracao, intervalo_coracao, jogador.vida)
+        if jogador.super_ativo:
+            if jogador.tipo_super == "LASER":
+                angulo_radiano = math.radians(angulo)
+        
+                origem_x = canhao_x + altura_cano * math.cos(angulo_radiano)
+                origem_y = canhao_y - altura_cano * math.sin(angulo_radiano)
+                         
+                    
+                comprimento_laser = 500
+                        
+                fim_x = origem_x + comprimento_laser * math.cos(angulo_radiano)
+                fim_y = origem_y - comprimento_laser * math.sin(angulo_radiano)
+                        
+                espessura_laser = 8
+                pygame.draw.line(TELA, "#e94747", (origem_x, origem_y), (fim_x, fim_y), espessura_laser)
+                    
+                for inimigo in grupo_inimigos:
+                    if inimigo.rect.clipline((origem_x, origem_y), (fim_x, fim_y)):
+                        inimigo.vida -= 5 
+                        if inimigo.vida <= 0:
+                            inimigo.kill()
+        
+                for coracao in grupo_coracao:
+                    if coracao.rect.clipline((origem_x, origem_y), (fim_x, fim_y)):
+                        jogador.vida += coracao.valor_cura
+                        coracao.kill()
+                        if jogador.vida >= 100:
+                            jogador.vida = 100
 
     canhao_x = jogador.rect.centerx
     canhao_y = jogador.rect.centery - 5
     cano_rotacionado = pygame.transform.rotate(cano_surf, angulo - 90)
     cano_rect = cano_rotacionado.get_rect()
-    
+            
     cano_rect.center = (canhao_x, canhao_y)
 
     TELA.fill(PRETO)
@@ -552,17 +630,17 @@ while rodando:
     mostrar_horda(TELA, fonte_horda, numero_horda)
 
     grupo_jogador.draw(TELA)
-    grupo_jogador.update()
+    if jogo_pausado is False:
+        grupo_jogador.update()
+        grupo_tiros.update()
+        grupo_coracao.update()
+        grupo_inimigos.update(jogador)
     
     TELA.blit(cano_rotacionado, cano_rect)
-
-    grupo_tiros.update()
     grupo_tiros.draw(TELA)
 
-    grupo_coracao.update()
     grupo_coracao.draw(TELA)
 
-    grupo_inimigos.update(jogador)
     grupo_inimigos.draw(TELA)
 
     desenhar_barra_progresso_super(
@@ -578,37 +656,6 @@ while rodando:
     tempo_atual,
     jogador.duracao_super
     )
-
-    if jogador.super_ativo:
-        if jogador.tipo_super == "LASER":
-            angulo_radiano = math.radians(angulo)
-
-            origem_x = canhao_x + altura_cano * math.cos(angulo_radiano)
-            origem_y = canhao_y - altura_cano * math.sin(angulo_radiano)
-                 
-            
-            comprimento_laser = 500
-                
-            fim_x = origem_x + comprimento_laser * math.cos(angulo_radiano)
-            fim_y = origem_y - comprimento_laser * math.sin(angulo_radiano)
-                
-            espessura_laser = 8
-            pygame.draw.line(TELA, "#e94747", (origem_x, origem_y), (fim_x, fim_y), espessura_laser)
-            
-            for inimigo in grupo_inimigos:
-                if inimigo.rect.clipline((origem_x, origem_y), (fim_x, fim_y)):
-                    inimigo.vida -= 5 
-                    if inimigo.vida <= 0:
-                        inimigo.kill()
-
-            for coracao in grupo_coracao:
-                if coracao.rect.clipline((origem_x, origem_y), (fim_x, fim_y)):
-                    jogador.vida += coracao.valor_cura
-                    coracao.kill()
-                    
-                    if jogador.vida >= 100:
-                        jogador.vida = 100
-
 
     colisoes_tiro_inimigo = pygame.sprite.groupcollide(grupo_tiros, grupo_inimigos, False, False)
     colisoes_inimigo_jogador = pygame.sprite.groupcollide(grupo_jogador, grupo_inimigos, False, False)
@@ -652,6 +699,9 @@ while rodando:
             inimigo.kill()
 
     desenhar_texto_horda(TELA, nome_horda_atual)
+
+    if mostrar_comandos:
+        desenhar_painel_comandos(TELA)
 
     pygame.display.flip()
     relogio.tick(60)
