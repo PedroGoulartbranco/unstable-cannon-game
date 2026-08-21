@@ -4,6 +4,7 @@ import math
 import random
 from config import *
 from matrizes import *
+from utils import *
 
 pygame.init()
 
@@ -14,6 +15,14 @@ pygame.display.set_caption("Canhão")
 PRETO = (20, 20, 20)
 BRANCO = (255, 255, 255)
 VERDE = "#806e58"
+
+pygame.mixer.init()
+
+pygame.mixer.music.load(caminho_recurso("music/musica_fundo_1.ogg"))
+
+pygame.mixer.music.set_volume(0.6)
+
+pygame.mixer.music.play(-1)
 
 fonte = pygame.font.SysFont(None, 20)
 fonte_horda = pygame.font.SysFont(None, 30)
