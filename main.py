@@ -352,7 +352,7 @@ def desenhar_texto_horda(tela, nome_horda_atual):
         else:
             mostrar_texto = False
 
-def desenhar_barra_progresso_super(superficie, x, y, largura, altura, atual, maximo, super_ativo, tempo_iniciado, tempo_maximo=15,cor_borda="#0e0d0d"):
+def desenhar_barra_progresso_super(superficie, x, y, largura, altura, atual, maximo, super_ativo, tempo_iniciado, tempo_atual, tempo_maximo=1500,cor_borda="#0e0d0d"):
     if maximo <= 0:
         maximo = 1
 
@@ -361,16 +361,23 @@ def desenhar_barra_progresso_super(superficie, x, y, largura, altura, atual, max
         cor_preenchimento = "#16e916"
 
     if super_ativo:
-        tempo_atual = tempo_maximo - tempo_iniciado
-        porcentagem = max(0, min(tempo_atual / tempo_maximo, 1.0))
+        tempo_decorrido = tempo_atual - tempo_iniciado
+        tempo_restante = tempo_maximo - tempo_decorrido
+        porcentagem = max(0, min(tempo_restante / tempo_maximo, 1.0))
+        cor_preenchimento = "#16e916"
     else:
         porcentagem = max(0, min(atual / maximo, 1.0))
 
     pygame.draw.rect(superficie, cor_borda, (x, y, largura, altura), 1)
 
-    largura_atual = largura * porcentagem
+    margem = 2  
+    largura_interna_max = largura - (margem * 2)
+    altura_interna = altura - (margem * 2)
+
+    largura_atual = largura_interna_max * porcentagem
+
     if largura_atual > 0:
-        pygame.draw.rect(superficie, cor_preenchimento, (x, y, largura_atual, altura))
+        pygame.draw.rect(superficie, cor_preenchimento, (x + margem, y + margem, largura_atual, altura_interna))
 
 barra_x_super = jogador.rect.centerx - (largura_barra_super // 2)
 barra_y_super = jogador.rect.bottom + 10
@@ -485,6 +492,7 @@ while rodando:
     jogador.meta_super,
     jogador.super_ativo,
     jogador.tempo_inicio_super,
+    tempo_atual,
     jogador.duracao_super
     )
 
