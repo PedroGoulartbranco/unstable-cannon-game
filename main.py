@@ -41,11 +41,16 @@ tempo_ultimo_coracao = 0
 intervalo_coracao = 20000
 
 class Tiro(pygame.sprite.Sprite):
-    def __init__(self, x, y, angulo, velocidade, gravidade):
+    def __init__(self, x, y, angulo, velocidade, gravidade, tipo="normal", cor="#32df0f"):
         super().__init__()
 
-        self.image = pygame.Surface((10, 10))
-        self.image.fill("#32df0f")
+        self.tamanho_base_tiro = 10
+        self.cor = cor
+
+        self.imagem_original = pygame.Surface((self.tamanho_base_tiro, self.tamanho_base_tiro))
+        self.imagem_original.fill(self.cor)
+        self.image = self.imagem_original.copy()
+        self.image.fill(self.cor)
         self.rect = self.image.get_rect(center=(x, y))
 
         angulo_radiano = math.radians(angulo)
@@ -56,6 +61,12 @@ class Tiro(pygame.sprite.Sprite):
         self.gravidade = gravidade
 
         self.dano = 10
+
+        self.tipo = tipo
+
+        self.limite_escala = 20.0
+        self.escala_atual = 1.0
+        self.taxa_crescimento = 0.07
         
     def update(self):
         self.rect.x += self.vel_x
@@ -63,7 +74,19 @@ class Tiro(pygame.sprite.Sprite):
 
         if gravidade_tiro_ativa:
             self.vel_y += self.gravidade
-        
+
+        if self.tipo == "tiro_grande":
+            if  self.escala_atual < self.limite_escala:
+                self.escala_atual += self.taxa_crescimento
+
+                nova_dimensao = int(self.tamanho_base_tiro * self.escala_atual)
+
+                self.image = pygame.transform.scale(self.imagem_original, (nova_dimensao, nova_dimensao))
+
+                self.rect = self.image.get_rect(center=self.rect.center)
+
+                self.dano += self.taxa_crescimento
+                
         if self.rect.right < 0 or self.rect.left > LARGURA or self.rect.bottom < 0 or self.rect.top > 600:
             self.kill()
 
@@ -235,7 +258,6 @@ class ItemCura(pygame.sprite.Sprite):
 
 def verificar_criar_coracao(tempo_atual, tempo_ultimo_coracao, intervalo_entre_coracao, vida):
     if vida == 100:
-        print(tempo_ultimo_coracao)
         return tempo_atual
     elif tempo_atual - tempo_ultimo_coracao > intervalo_entre_coracao:
         x = random.randint(0, 860)
@@ -342,7 +364,6 @@ def disparar_texto_horda(nome):
     global mostrar_texto, tempo_inicio_texto, nome_horda_atual
     if nome == "areo":
         nome_horda_atual ="FLY"
-        print(nome_horda_atual)
     mostrar_texto = True
     tempo_inicio_texto = pygame.time.get_ticks()
 
@@ -388,7 +409,6 @@ def desenhar_barra_progresso_super(superficie, x, y, largura, altura, atual, max
     if largura_atual > 0:
         pygame.draw.rect(superficie, cor_preenchimento, (x + margem, y + margem, largura_atual, altura_interna))
 
-    
     terco = largura / 3
     
     y_inicio = y + 1
@@ -434,7 +454,7 @@ while rodando:
                     ponta_y = canhao_y - altura_cano * math.sin(angulo_radiano)
                     novo_tiro = Tiro(ponta_x, ponta_y, angulo, velocidade_tiro, gravidade_tiro)
                     grupo_tiros.add(novo_tiro)
-            if evento.key == pygame.K_e:
+            elif evento.key == pygame.K_e:
                 if jogador.pode_ativar_super:
                     jogador.super_ativo = True
                     jogador.pode_ativar_super = False
@@ -442,6 +462,17 @@ while rodando:
                     jogador.abates_para_super = 0
                     if jogador.tipo_super == "LASER":
                         jogador.jogador_girada_angulo = 1
+            elif evento.key == pygame.K_q:
+                print(jogador.abates_para_super)
+                if jogador.abates_para_super >= 1:
+                    print("aqiuiiiiiiii")
+                    angulo_radiano = math.radians(angulo)
+                    jogador.abates_para_super -= 1
+                                        
+                    ponta_x = canhao_x + altura_cano * math.cos(angulo_radiano)
+                    ponta_y = canhao_y - altura_cano * math.sin(angulo_radiano)
+                    novo_tiro = Tiro(ponta_x, ponta_y, angulo, 2, gravidade_tiro, tipo="tiro_grande", cor="#ffffff")
+                    grupo_tiros.add(novo_tiro)
 
         tempo_atual = pygame.time.get_ticks()
 
