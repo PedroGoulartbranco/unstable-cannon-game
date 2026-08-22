@@ -12,8 +12,8 @@ LARGURA, ALTURA = 900, 600
 TELA = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Unstable Cannon")
 
-jogo_pausado = True
-mostrar_comandos = True
+jogo_pausado = False
+mostrar_comandos = False
 
 PRETO = (20, 20, 20)
 BRANCO = (255, 255, 255)
@@ -547,6 +547,7 @@ while rodando:
                         som_tiro_grande.play()
 
         tempo_atual = pygame.time.get_ticks()
+    TELA.fill(PRETO)
     if jogo_pausado is False:
         if len(fila_espera) > 0 and len(grupo_inimigos) < limite_inimigo_tela: 
             if tempo_atual - ultimo_spawn > intervalo_spawn:
@@ -622,8 +623,6 @@ while rodando:
     cano_rect = cano_rotacionado.get_rect()
             
     cano_rect.center = (canhao_x, canhao_y)
-
-    TELA.fill(PRETO)
 
     pygame.draw.rect(TELA, BRANCO, (0, ALTURA_CHAO, LARGURA, ALTURA - ALTURA_CHAO))
     mostrar_barra_vida_jogador(TELA, fonte, vida_jogador, jogador.vida)
