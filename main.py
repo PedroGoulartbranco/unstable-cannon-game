@@ -13,7 +13,9 @@ TELA = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Unstable Cannon")
 
 jogo_pausado = False
-mostrar_comandos = False
+mostrar_comandos = True
+tela_inicial = False
+tela_game_over = False
 
 PRETO = (20, 20, 20)
 BRANCO = (255, 255, 255)
@@ -463,24 +465,24 @@ def desenhar_painel_comandos(superficie, largura=500, altura=400):
     cor_borda = (25, 224, 115) 
     pygame.draw.rect(painel, cor_borda, (0, 0, largura, altura), 3)
 
-    txt_titulo = fonte_titulo.render("PAUSADO - COMANDOS", True, (255, 255, 255))
+    txt_titulo = fonte_titulo.render("PAUSED - CONTROLS", True, (255, 255, 255))
     rect_titulo = txt_titulo.get_rect(center=(largura // 2, 35))
     painel.blit(txt_titulo, rect_titulo)
     
     pygame.draw.line(painel, cor_borda, (20, 60), (largura - 20, 60), 2)
     
     comandos = [
-        "WASD / Setas : Mover e Mirar",
-        "ESPAÇO : Tiro Básico",
-        "E / SHIFT : Disparar Super Laser",
-        "P / ESC : Pausar / Retomar",
+        "WASD / Arrows : Move and Aim",
+        "SPACE : Basic Shot",
+        "E / SHIFT : Fire Super Laser",
+        "P / ESC : Pause / Resume",
         "",
-        "Pressione ESPAÇO para Continuar"
+        "Press SPACE to Continue"
     ]
     
     pos_y = 90
     for linha in comandos:
-        if linha == "Pressione ESPAÇO para Continuar":
+        if linha == "Press SPACE to Continue":
             txt_linha = fonte_texto.render(linha, True, (255, 230, 0))
             rect_linha = txt_linha.get_rect(center=(largura // 2, altura - 40))
             painel.blit(txt_linha, rect_linha)
@@ -488,6 +490,7 @@ def desenhar_painel_comandos(superficie, largura=500, altura=400):
             txt_linha = fonte_texto.render(linha, True, (220, 220, 220))
             painel.blit(txt_linha, (30, pos_y))
             pos_y += 35
+            
     superficie.blit(painel, (x, y))
 
 barra_x_super = jogador.rect.centerx - (largura_barra_super // 2)
