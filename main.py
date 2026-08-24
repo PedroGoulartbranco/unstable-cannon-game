@@ -12,7 +12,7 @@ LARGURA, ALTURA = 900, 600
 TELA = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Unstable Cannon")
 
-jogo_pausado = False
+jogo_pausado = True
 mostrar_comandos = False
 mostrar_tela_inicial = True
 tela_game_over = False
@@ -615,6 +615,11 @@ while rodando:
                         novo_tiro = Tiro(ponta_x, ponta_y, angulo, 2, gravidade_tiro, tipo="tiro_grande", cor="#ffffff")
                         grupo_tiros.add(novo_tiro)
                         som_tiro_grande.play()
+            else:
+                if evento.key == pygame.K_SPACE:
+                    if mostrar_tela_inicial:
+                        mostrar_tela_inicial = False
+                        jogo_pausado = False
 
         tempo_atual = pygame.time.get_ticks()
     TELA.fill(PRETO)
