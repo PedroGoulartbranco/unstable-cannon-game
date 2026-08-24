@@ -341,7 +341,7 @@ def mostrar_horda(tela, fonte, numero_horda):
     fator_escala = largura_tela / 960
 
 
-    texto_horda = f"HORDA: {numero_horda}"
+    texto_horda = f"HORDE: {numero_horda}"
     
     surf_texto = fonte.render(texto_horda, True, (255, 255, 255))
     
