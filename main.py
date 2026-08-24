@@ -13,8 +13,8 @@ TELA = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Unstable Cannon")
 
 jogo_pausado = False
-mostrar_comandos = True
-tela_inicial = False
+mostrar_comandos = False
+mostrar_tela_inicial = True
 tela_game_over = False
 
 PRETO = (20, 20, 20)
@@ -474,7 +474,8 @@ def desenhar_painel_comandos(superficie, largura=500, altura=400):
     comandos = [
         "WASD / Arrows : Move and Aim",
         "SPACE : Basic Shot",
-        "E / SHIFT : Fire Super Laser",
+        "Q : Big Shot",
+        "E : Fire Super Laser",
         "P / ESC : Pause / Resume",
         "",
         "Press SPACE to Continue"
@@ -489,6 +490,72 @@ def desenhar_painel_comandos(superficie, largura=500, altura=400):
         else:
             txt_linha = fonte_texto.render(linha, True, (220, 220, 220))
             painel.blit(txt_linha, (30, pos_y))
+            pos_y += 35
+            
+    superficie.blit(painel, (x, y))
+
+def desenhar_tela_inicio(superficie, largura=500, altura=450): 
+    tela_largura = superficie.get_width()
+    tela_altura = superficie.get_height()
+    
+    x = (tela_largura // 2) - (largura // 2)
+    y = (tela_altura // 2) - (altura // 2)
+
+    painel = pygame.Surface((largura, altura), pygame.SRCALPHA)
+    cor_fundo = (15, 15, 20, 210) 
+    painel.fill(cor_fundo)
+    
+    cor_borda = (25, 224, 115) 
+    pygame.draw.rect(painel, cor_borda, (0, 0, largura, altura), 3)
+
+    txt_titulo = fonte_titulo.render("WELCOME TO THE GAME", True, (255, 255, 255))
+    rect_titulo = txt_titulo.get_rect(center=(largura // 2, 35))
+    painel.blit(txt_titulo, rect_titulo)
+    
+    pygame.draw.line(painel, cor_borda, (20, 60), (largura - 20, 60), 2)
+
+    regras = [
+        "This is an infinite horde survival game.",
+        "The difficulty increases over time.",
+        "WARNING: Do not let the enemies reach the tank!"
+    ]
+    
+    pos_y = 80
+    for regra in regras:
+        if "WARNING" in regra:
+            txt_regra = fonte_texto.render(regra, True, (255, 100, 100)) 
+        else:
+            txt_regra = fonte_texto.render(regra, True, (200, 200, 255))
+            
+        rect_regra = txt_regra.get_rect(center=(largura // 2, pos_y))
+        painel.blit(txt_regra, rect_regra)
+        pos_y += 35
+        
+    pygame.draw.line(painel, cor_borda, (100, pos_y + 10), (largura - 100, pos_y + 10), 1)
+    
+    pos_y += 35 
+    comandos = [
+        "WASD / Arrows : Move and Aim",
+        "SPACE : Basic Shot",
+        "Q : Big Shot", 
+        "E : Fire Super Laser",
+        "P / ESC : Pause / Resume",
+        "",
+        "Press SPACE to Start"      
+    ]
+    
+    for linha in comandos:
+        if linha == "Press SPACE to Start":
+            txt_linha = fonte_texto.render(linha, True, (255, 230, 0))
+            rect_linha = txt_linha.get_rect(center=(largura // 2, altura - 40))
+            painel.blit(txt_linha, rect_linha)
+        elif linha == "CONTROLS:":
+            txt_linha = fonte_texto.render(linha, True, (255, 255, 255))
+            painel.blit(txt_linha, (50, pos_y))
+            pos_y += 35
+        else:
+            txt_linha = fonte_texto.render(linha, True, (220, 220, 220))
+            painel.blit(txt_linha, (50, pos_y))
             pos_y += 35
             
     superficie.blit(painel, (x, y))
@@ -704,6 +771,8 @@ while rodando:
 
     if mostrar_comandos:
         desenhar_painel_comandos(TELA)
+    elif mostrar_tela_inicial:
+        desenhar_tela_inicio(TELA)
 
     pygame.display.flip()
     relogio.tick(60)
