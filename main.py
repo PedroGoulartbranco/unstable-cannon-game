@@ -247,7 +247,7 @@ class Jogador(pygame.sprite.Sprite):
         
         self.rect.centerx = posicao_x
         self.rect.centery = posicao_y
-        self.vida = 1
+        self.vida = 100
         self.jogador_girada_angulo = 2
 
         self.limite_angulo_maior = 180
@@ -473,7 +473,7 @@ def desenhar_painel_comandos(superficie, largura=500, altura=400):
     pygame.draw.line(painel, cor_borda, (20, 60), (largura - 20, 60), 2)
     
     comandos = [
-        "WASD / Arrows : Move and Aim",
+        "AD / Arrows : Move and Aim",
         "SPACE : Basic Shot",
         "Q : Big Shot",
         "E : Fire Super Laser",
@@ -536,7 +536,7 @@ def desenhar_tela_inicio(superficie, largura=500, altura=450):
     
     pos_y += 35 
     comandos = [
-        "WASD / Arrows : Move and Aim",
+        "AD / Arrows : Move and Aim",
         "SPACE : Basic Shot",
         "Q : Big Shot", 
         "E : Fire Super Laser",
@@ -646,6 +646,9 @@ while rodando:
                         novo_tiro = Tiro(ponta_x, ponta_y, angulo, 2, gravidade_tiro, tipo="tiro_grande", cor="#ffffff")
                         grupo_tiros.add(novo_tiro)
                         som_tiro_grande.play()
+                elif evento.key == pygame.K_ESCAPE:
+                    jogo_pausado = True
+                    mostrar_comandos = True
             else:
                 if evento.key == pygame.K_SPACE:
                     if mostrar_tela_inicial:
@@ -662,6 +665,9 @@ while rodando:
                         grupo_coracao.empty()
                         tipo_horda_atual = "normal"
                         numero_horda = 1
+                    elif mostrar_comandos:
+                        jogo_pausado = False
+                        mostrar_comandos = False
 
 
         tempo_atual = pygame.time.get_ticks()
@@ -701,10 +707,10 @@ while rodando:
 
     
         teclas = pygame.key.get_pressed()
-        if teclas[pygame.K_LEFT]:
+        if teclas[pygame.K_LEFT] or teclas[pygame.K_a]:
             angulo += jogador.jogador_girada_angulo
             angulo = max(0, min(angulo, 180))
-        if teclas[pygame.K_RIGHT]:
+        if teclas[pygame.K_RIGHT] or teclas[pygame.K_d]:
             angulo -= jogador.jogador_girada_angulo
             angulo = max(0, min(angulo, 180))
 
