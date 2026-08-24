@@ -651,6 +651,18 @@ while rodando:
                     if mostrar_tela_inicial:
                         mostrar_tela_inicial = False
                         jogo_pausado = False
+                    elif jogo_acabou:
+                        jogo_acabou = False
+                        jogo_pausado = False
+                        jogador = Jogador(int(LARGURA / 2), ALTURA_CHAO)
+                        grupo_jogador.empty()
+                        grupo_inimigos.empty()
+                        grupo_tiros.empty()
+                        grupo_jogador = pygame.sprite.GroupSingle(jogador)
+                        grupo_coracao.empty()
+                        tipo_horda_atual = "normal"
+                        numero_horda = 1
+
 
         tempo_atual = pygame.time.get_ticks()
     TELA.fill(PRETO)
