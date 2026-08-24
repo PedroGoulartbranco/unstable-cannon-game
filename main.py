@@ -16,6 +16,7 @@ jogo_pausado = True
 mostrar_comandos = False
 mostrar_tela_inicial = True
 tela_game_over = False
+jogo_acabou= False
 
 PRETO = (20, 20, 20)
 BRANCO = (255, 255, 255)
@@ -246,7 +247,7 @@ class Jogador(pygame.sprite.Sprite):
         
         self.rect.centerx = posicao_x
         self.rect.centery = posicao_y
-        self.vida = 100
+        self.vida = 1
         self.jogador_girada_angulo = 2
 
         self.limite_angulo_maior = 180
@@ -560,6 +561,36 @@ def desenhar_tela_inicio(superficie, largura=500, altura=450):
             
     superficie.blit(painel, (x, y))
 
+def desenhar_tela_game_over(superficie, largura=500, altura=300):
+    tela_largura = superficie.get_width()
+    tela_altura = superficie.get_height()
+    
+    x = (tela_largura // 2) - (largura // 2)
+    y = (tela_altura // 2) - (altura // 2)
+
+    painel = pygame.Surface((largura, altura), pygame.SRCALPHA)
+    cor_fundo = (15, 15, 20, 210) 
+    painel.fill(cor_fundo)
+    
+    cor_borda = (255, 50, 50) 
+    pygame.draw.rect(painel, cor_borda, (0, 0, largura, altura), 3)
+
+    txt_titulo = fonte_titulo.render("GAME OVER", True, (255, 50, 50))
+    rect_titulo = txt_titulo.get_rect(center=(largura // 2, 45))
+    painel.blit(txt_titulo, rect_titulo)
+    
+    pygame.draw.line(painel, cor_borda, (20, 80), (largura - 20, 80), 2)
+
+    txt_motivo = fonte_texto.render("The tank was destroyed!", True, (220, 220, 220))
+    rect_motivo = txt_motivo.get_rect(center=(largura // 2, altura // 2))
+    painel.blit(txt_motivo, rect_motivo)
+    
+    txt_reiniciar = fonte_texto.render("Press SPACE to Restart", True, (255, 230, 0))
+    rect_reiniciar = txt_reiniciar.get_rect(center=(largura // 2, altura - 40))
+    painel.blit(txt_reiniciar, rect_reiniciar)
+    
+    superficie.blit(painel, (x, y))
+
 barra_x_super = jogador.rect.centerx - (largura_barra_super // 2)
 barra_y_super = jogador.rect.bottom + 10
 
@@ -623,6 +654,10 @@ while rodando:
 
         tempo_atual = pygame.time.get_ticks()
     TELA.fill(PRETO)
+    if jogo_acabou is False:
+        if jogador.vida <= 0:
+            jogo_pausado= True
+            jogo_acabou = True
     if jogo_pausado is False:
         if len(fila_espera) > 0 and len(grupo_inimigos) < limite_inimigo_tela: 
             if tempo_atual - ultimo_spawn > intervalo_spawn:
@@ -778,6 +813,8 @@ while rodando:
         desenhar_painel_comandos(TELA)
     elif mostrar_tela_inicial:
         desenhar_tela_inicio(TELA)
+    elif jogo_acabou:
+        desenhar_tela_game_over(TELA)
 
     pygame.display.flip()
     relogio.tick(60)
