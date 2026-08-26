@@ -594,11 +594,11 @@ def desenhar_tela_game_over(superficie, largura=500, altura=300):
 barra_x_super = jogador.rect.centerx - (largura_barra_super // 2)
 barra_y_super = jogador.rect.bottom + 10
 
-numero_horda = 1
+numero_horda = 10
 orcamento_atual = calcular_orcamento_horda(numero_horda)
 fila_espera = calcular_horda(orcamento_atual, numero_horda, "normal")
 
-intervalo_spawn = 2000
+intervalo_spawn = 200
 ultimo_spawn = 0
 limite_inimigo_tela = 10
 
